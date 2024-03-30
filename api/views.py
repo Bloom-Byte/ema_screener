@@ -1,8 +1,9 @@
+from django.db.models.manager import BaseManager
 from rest_framework import generics, response
 
 from ema.models import EMARecord
 from ema.serializers import EMARecordSerializer
-from .utils import EMARecordFilterer
+from .filters import EMARecordFilterer
 
 ema_record_qs = EMARecord.objects.select_related("currency").all()
 
@@ -14,9 +15,10 @@ class EMARecordListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = EMARecordSerializer
     queryset = ema_record_qs
 
-    def get_queryset(self):
+    def get_queryset(self) -> BaseManager[EMARecord]:
         filterer = EMARecordFilterer(self.request.query_params)
-        return filterer.apply_filters(super().get_queryset())
+        qs = super().get_queryset()
+        return filterer.apply_filters(qs)
     
 
     def get(self, request, *args, **kwargs) -> response.Response:
@@ -24,14 +26,14 @@ class EMARecordListCreateAPIView(generics.ListCreateAPIView):
         Retrieve a list of EMA records
 
         Tne following query parameters are supported:
-        - timeframe: Duration of the timeframe
+        - timeframe: Duration of the timeframe in the format "HH:MM:SS" e.g. "1:00:00" for 1 hour
         - currency: Symbol or name of the currency
         - ema20: EMA20 value
         - ema50: EMA50 value
         - ema100: EMA100 value
         - ema200: EMA200 value
         - trend: Trend direction (1 for upwards, -1 for downwards, 0 for sideways)
-
+        - watch: EMA watchlist type. Can be either be type "A", "B", or "C"
         """
         return super().get(request, *args, **kwargs)
 
