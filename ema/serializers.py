@@ -4,6 +4,10 @@ from typing import Any, Dict
 from .models import EMARecord
 from currency.serializers import CurrencySerializer
 from currency.models import Currency
+from .utils import (
+    convert_watch_values_external_names_to_internal_names,
+    convert_watch_values_internal_names_to_external_names
+)
 
 
 
@@ -42,6 +46,21 @@ class EMARecordSerializer(serializers.ModelSerializer):
             "updated_at": {"format": "%H:%M:%S %d-%m-%Y %z"},
         }
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Convert internal watchlist names to external watchlist names
+        # before returning the data
+        return convert_watch_values_internal_names_to_external_names(representation)
+    
+
+    def run_validation(self, data=...):
+        # Incase the watch values are provided in external names,
+        # convert the external watch value names to internal watchlist names
+        # before validating the data
+        data = convert_watch_values_external_names_to_internal_names(data)
+        return super().run_validation(data)
+
+
     def create(self, validated_data: Dict) -> Any:
         currency_symbol: str = validated_data.pop("currency_symbol", None)
         if not currency_symbol:
@@ -56,3 +75,4 @@ class EMARecordSerializer(serializers.ModelSerializer):
         else:
             validated_data["currency"] = currency
         return super().create(validated_data)
+
