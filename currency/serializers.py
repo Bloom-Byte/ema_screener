@@ -6,8 +6,8 @@ from .models import Currency
 
 class CurrencySerializer(serializers.ModelSerializer):
     """Model serializer for currencies"""
-    category = serializers.StringRelatedField()
-    subcategory = serializers.StringRelatedField()
+    category = serializers.CharField(source="category.name")
+    subcategory = serializers.CharField(source="subcategory.name")
 
     class Meta:
         model = Currency

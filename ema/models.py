@@ -1,4 +1,3 @@
-import random
 from django.db import models
 import uuid
 from django.utils.translation import gettext_lazy as _
@@ -22,7 +21,7 @@ class EMARecord(models.Model):
     ema50 = models.FloatField(null=True, blank=True)
     ema100 = models.FloatField(null=True, blank=True)
     ema200 = models.FloatField(null=True, blank=True)
-    trend = models.IntegerField(choices=TrendChoices.choices, default=random.choice(TrendChoices.choices)[0])
+    trend = models.IntegerField(choices=TrendChoices.choices)
     monhigh = models.IntegerField()
     monlow = models.IntegerField()
     monmid = models.IntegerField()
@@ -40,4 +39,4 @@ class EMARecord(models.Model):
 
 
     def __str__(self) -> str:
-        return f"{self.currency.name} at {self.timestamp.strftime("%H:%M:%S %d-%m-%Y")}"
+        return f"{self.currency.name} at {self.timestamp.strftime("%H:%M:%S %d-%m-%Y (%Z)")}"

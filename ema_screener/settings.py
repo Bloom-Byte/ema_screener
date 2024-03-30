@@ -15,8 +15,6 @@ SECRET_KEY = secret_manager.get_or_create_secret_key()
 
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 
-ALLOWED_HOSTS = []
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -27,6 +25,7 @@ INSTALLED_APPS = [
 
     # dependencies
     'rest_framework',
+    'rest_framework_api_key',
     'djsm',
     'corsheaders',
 
@@ -105,6 +104,7 @@ USE_I18N = True
 USE_TZ = True
 
 
+SITE_ID = 1
 
 STATIC_URL = 'static/'
 
@@ -113,5 +113,35 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 50
+    # set default limit and offset
+    
 }
+
+
+if DEBUG is False:
+    # Production only settings
+    # REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
+    #     "rest_framework.renderers.JSONRenderer",
+    # ]
+
+    REST_FRAMEWORK['DEFAULT_PERMISSION_CLASSES'] = [
+        "api.permissions.HasAPIKeyOrIsAuthenticated",
+    ]
+
+    ALLOWED_HOSTS = ["*"]
+
+    CORS_ALLOW_ALL_ORIGINS = False
+
+    CORS_ALLOWED_ORIGINS = ["https://*", "http://*"]
+
+    API_KEY_CUSTOM_HEADER = "HTTP_X_API_KEY" # Request header should have "X-API-KEY" key
+
+else:
+    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
+    ]
+
+    CORS_ALLOW_ALL_ORIGINS = True
+
+

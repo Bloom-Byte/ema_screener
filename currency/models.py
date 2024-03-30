@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 
 
@@ -35,7 +36,7 @@ class CurrencySubcategory(models.Model):
         verbose_name_plural = _("Currency Subcategories")
 
     def __str__(self) -> str:
-        return self.name
+        return f"{self.name} ({self.category.name})"
 
 
 
@@ -63,7 +64,7 @@ class Currency(models.Model):
     def save(self, *args, **kwargs) -> None:
         self.symbol = self.symbol.upper()
         if not self.subcategory.category == self.category:
-            raise ValueError(
-                f"Subcategory '{self.subcategory.name}' does not belong to the category,'{self.category.name}'"
-            )
+            raise DjangoValidationError({
+                "subcategory": f"Subcategory '{self.subcategory.name}' does not belong to the category,'{self.category.name}'"
+            })
         super().save(*args, **kwargs)
