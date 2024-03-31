@@ -26,7 +26,6 @@ class EMARecordUpdateConsumer(AsyncJsonWebsocketConsumer):
     
 
     async def send_ema_record_update(self, event):
-        print(event)
         await self.send_json(content=event['data'])
 
 

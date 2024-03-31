@@ -6,7 +6,5 @@ from ema import routing as ema_routing
 
 
 application = ProtocolTypeRouter({
-    "websocket": AllowedHostsOriginValidator(
-        AuthMiddlewareStack(URLRouter(ema_routing.websocket_urlpatterns))
-    ),
+    "websocket": URLRouter(ema_routing.websocket_urlpatterns),
 })
