@@ -6,6 +6,7 @@ from .serializers import EMARecordSerializer
 from .utils import get_dict_diff, notify_client_of_ema_record_update_via_websocket
 
 
+
 @receiver(pre_save, sender=EMARecord)
 def send_updates_via_websocket(sender: type[EMARecord], instance: EMARecord, **kwargs) -> None:
     """

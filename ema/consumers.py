@@ -1,6 +1,7 @@
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 
+
 class EMARecordUpdateConsumer(AsyncJsonWebsocketConsumer):
     """Websocket consumer for EMA record updates"""  
     channel_layer_alias = 'default'
