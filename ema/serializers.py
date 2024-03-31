@@ -46,7 +46,7 @@ class EMARecordSerializer(serializers.ModelSerializer):
             "updated_at": {"format": "%H:%M:%S %d-%m-%Y %z"},
         }
 
-    def to_representation(self, instance):
+    def to_representation(self, instance) -> Dict:
         representation = super().to_representation(instance)
         # Convert internal watchlist names to external watchlist names
         # before returning the data
@@ -64,7 +64,9 @@ class EMARecordSerializer(serializers.ModelSerializer):
     def create(self, validated_data: Dict) -> Any:
         currency_symbol: str = validated_data.pop("currency_symbol", None)
         if not currency_symbol:
-            raise exceptions.ValidationError({"currency_symbol": ["This field is required."]})
+            raise exceptions.ValidationError({
+                "currency_symbol": ["This field is required."]
+            })
         
         try:
             currency = Currency.objects.get(symbol__iexact=currency_symbol)

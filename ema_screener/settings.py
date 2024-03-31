@@ -16,18 +16,21 @@ SECRET_KEY = secret_manager.get_or_create_secret_key()
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 
 INSTALLED_APPS = [
+    # dependencies
+    'rest_framework',
+    'rest_framework_api_key',
+    'djsm',
+    'corsheaders',
+    "channels",
+    "daphne",
+
+    # django apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    # dependencies
-    'rest_framework',
-    'rest_framework_api_key',
-    'djsm',
-    'corsheaders',
 
     # apps
     'ema.apps.EmaConfig',
@@ -65,11 +68,21 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ema_screener.wsgi.application'
 
+ASGI_APPLICATION = 'ema_screener.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 DATABASES = {
    'default': {
        'ENGINE': 'django.db.backends.postgresql',
-       'NAME': secret_manager.get_secret("DB_NAME"),
+       'NAME': os.getenv("DB_NAME"),
        'USER': secret_manager.get_secret("DB_USER"),
        'PASSWORD': secret_manager.get_secret("DB_PASSWORD"),
        'HOST': os.getenv("DB_HOST"),

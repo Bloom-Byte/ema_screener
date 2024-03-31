@@ -1,4 +1,6 @@
 from typing import Dict
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 
 def get_dict_diff(dict1: Dict, dict2: Dict) -> Dict:
@@ -59,3 +61,20 @@ def convert_watch_values_internal_names_to_external_names(data: Dict) -> Dict:
             continue
         new_data[key] = value
     return new_data
+
+
+def notify_client_of_ema_record_update_via_websocket(group_name: str, data: Dict) -> None:
+    """
+    Notify the clients in the channel group of the EMA record update via websocket
+
+    :param group_name: The name of the channel group to send the message to
+    :param data: The data to send to the client
+    """
+    channel_layer = get_channel_layer("default")
+    async_to_sync(channel_layer.group_send)(
+        group_name,
+        {
+            'type': 'send.ema_record_update',
+            'data': data
+        }
+    )
