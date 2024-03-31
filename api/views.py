@@ -1,11 +1,24 @@
 from django.db.models.manager import BaseManager
-from rest_framework import generics, response
+from rest_framework import generics, response, status
+from django.views.decorators.csrf import csrf_exempt
+from django.http.response import JsonResponse
 
 from ema.models import EMARecord
 from ema.serializers import EMARecordSerializer
 from .filters import EMARecordFilterer
 
 ema_record_qs = EMARecord.objects.select_related("currency").all()
+
+
+@csrf_exempt
+def health_check_api_view(request, *args, **kwargs) -> JsonResponse:
+    """Simple view to test if the API server is up and running."""
+    return JsonResponse(
+        data={
+            "message": "Server is !down."
+        },
+        status=status.HTTP_200_OK
+    )
 
 
 

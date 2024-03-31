@@ -21,6 +21,7 @@ async def api_key_exists(api_key: str) -> bool:
         return False
     return True
 
+
 def get_api_key_from_scope(scope: Dict) -> str | None:
     """
     Checks the websocket consumer scope headers and query-string for an API key.
@@ -45,12 +46,12 @@ def get_api_key_from_scope(scope: Dict) -> str | None:
         for header in headers:
             key = header[0].decode("utf-8")
             value = header[1].decode("utf-8")
-            if key == "X-API-KEY":
+            if key == "x-api-key":
                 return value
     return None
 
 
-UNAUTHORIZED_MSG = "Unauthorized! Ensure a valid API key is included in your connection request's header or url query params"
+UNAUTHORIZED_MSG = "Unauthorized! Ensure a valid API key is included in your connection request's header or url query params."
 
 async def reject_unauthorized(send, message: str = UNAUTHORIZED_MSG) -> None:
     await send({

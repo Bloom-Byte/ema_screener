@@ -27,15 +27,15 @@ def send_updates_via_websocket(sender: type[EMARecord], instance: EMARecord, **k
     previous_record_dict = EMARecordSerializer(previous_record).data
     record_dict = EMARecordSerializer(instance).data
     # Get the changes made to the record
-    diff = get_dict_diff(previous_record_dict, record_dict)
-    if diff:
-        # Add the id of the record to the diff
-        diff["id"] = str(instance.pk)
+    change_data = get_dict_diff(previous_record_dict, record_dict)
+    if change_data:
+        # Add the id of the record to the change_data
+        change_data["id"] = str(instance.pk)
         data = {
             "message": "EMA record updated",
-            "data": diff
+            "data": change_data
         }
-        notify_client_of_ema_record_update_via_websocket("ema_record_updates", diff)
+        notify_client_of_ema_record_update_via_websocket("ema_record_updates", change_data)
     return
 
 
