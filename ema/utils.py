@@ -63,7 +63,7 @@ def convert_watch_values_internal_names_to_external_names(data: Dict) -> Dict:
     return new_data
 
 
-def notify_client_of_ema_record_update_via_websocket(group_name: str, data: Dict) -> None:
+def notify_group_of_ema_record_update_via_websocket(group_name: str, data: Dict) -> None:
     """
     Notify the clients in the channel group of the EMA record update via websocket
 

@@ -3,7 +3,7 @@ from django.db.models.signals import pre_save
 
 from .models import EMARecord
 from .serializers import EMARecordSerializer
-from .utils import get_dict_diff, notify_client_of_ema_record_update_via_websocket
+from .utils import get_dict_diff, notify_group_of_ema_record_update_via_websocket
 
 
 
@@ -21,7 +21,7 @@ def send_updates_via_websocket(sender: type[EMARecord], instance: EMARecord, **k
             "message": "New EMA record added",
             "data": data
         }
-        notify_client_of_ema_record_update_via_websocket("ema_record_updates", data)
+        notify_group_of_ema_record_update_via_websocket("ema_record_updates", data)
         return
     
     previous_record_dict = EMARecordSerializer(previous_record).data
@@ -35,7 +35,7 @@ def send_updates_via_websocket(sender: type[EMARecord], instance: EMARecord, **k
             "message": "EMA record updated",
             "data": change_data
         }
-        notify_client_of_ema_record_update_via_websocket("ema_record_updates", change_data)
+        notify_group_of_ema_record_update_via_websocket("ema_record_updates", change_data)
     return
 
 
