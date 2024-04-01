@@ -33,10 +33,16 @@ This is a screener API that uses the Exponential Moving Average (EMA) to determi
 
 - Run the server using `python manage.py runserver`
 
-- Open a new console and start a redis server on port 6379 using
+- Start Docker, open a new console and start a redis server on port 6379 using
 
 ```bash
 docker run --rm -p 6379:6379 redis:7
+```
+
+Or on a linux terminal (make sure to have redis installed):
+
+```bash
+sudo service redis-server start
 ```
 
 **View API documentation [here](https://documenter.getpostman.com/view/21622102/2sA35G42rH)**
