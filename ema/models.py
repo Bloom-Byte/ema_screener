@@ -39,4 +39,4 @@ class EMARecord(models.Model):
 
 
     def __str__(self) -> str:
-        return f'{self.currency.name} at {self.timestamp.strftime("%H:%M:%S %d-%m-%Y (%Z)")}'
+        return f"{self.currency.name} at {self.timestamp.strftime('%H:%M:%S %d-%m-%Y (%Z)')}"
