@@ -43,8 +43,8 @@ docker run --rm -p 6379:6379 redis:7
 
 ## Connecting to the EMA Record Update Websocket
 
-The EMA record update record websocket route is `/ws/ema-records/update/`
-
+The EMA record update record websocket route is `ws://<net_loc>/ws/ema-records/update/`
+`
 In production, ensure that you include a valid API key with your connection request. You can do this by
 
 - Adding a url query param `/ws/ema-records/update/?api_key=<your_api_key>`, or
