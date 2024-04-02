@@ -2,7 +2,7 @@ from rest_framework import serializers, exceptions
 from typing import Any, Dict
 
 from .models import EMARecord
-from currency.serializers import CurrencySerializer
+from currency.serializers import StrippedCurrencySerializer
 from currency.models import Currency
 from .utils import (
     convert_watch_values_external_names_to_internal_names,
@@ -13,7 +13,7 @@ from .utils import (
 
 class EMARecordSerializer(serializers.ModelSerializer):
     """Model serializer for EMA records"""
-    currency = CurrencySerializer(read_only=True)
+    currency = StrippedCurrencySerializer(read_only=True)
     currency_symbol = serializers.CharField(write_only=True)
 
     class Meta:

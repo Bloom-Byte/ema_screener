@@ -33,7 +33,7 @@ class EMARecord(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["timestamp"]
+        ordering = ["-timestamp"]
         verbose_name = _("EMA Record")
         verbose_name_plural = _("EMA Records")
 

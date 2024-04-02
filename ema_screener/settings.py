@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     # dependencies
     'rest_framework',
     'rest_framework_api_key',
+    'rest_framework.authtoken',
     'djsm',
     'corsheaders',
     "channels",
@@ -34,7 +35,8 @@ INSTALLED_APPS = [
 
     # apps
     'ema.apps.EmaConfig',
-    'currency.apps.CurrencyConfig'
+    'currency.apps.CurrencyConfig',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
@@ -106,7 +108,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+AUTH_USER_MODEL = 'users.UserAccount'
 
 LANGUAGE_CODE = 'en-us'
 
@@ -122,6 +124,23 @@ SITE_ID = 1
 STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+
+EMAIL_PORT = os.getenv("EMAIL_PORT")
+
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "false").lower() == "true"
+
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "false").lower() == "true"
+
+EMAIL_HOST_USER = secret_manager.get_secret("EMAIL_HOST_USER")
+
+EMAIL_HOST_PASSWORD = secret_manager.get_secret("EMAIL_HOST_PASSWORD")
+
+DEFAULT_FROM_EMAIL = os.getenv("SERVER_EMAIL")
 
 
 REST_FRAMEWORK = {
@@ -140,11 +159,11 @@ if DEBUG is False:
         "api.permissions.HasAPIKeyOrIsAuthenticated",
     ]
 
-    ALLOWED_HOSTS = ["*"]
+    ALLOWED_HOSTS = ["*"] # Set to your domain
 
     CORS_ALLOW_ALL_ORIGINS = False
 
-    CORS_ALLOWED_ORIGINS = ["https://*", "http://*"]
+    CORS_ALLOWED_ORIGINS = ["https://*", "http://*", "ws://*", "wss://*"]
 
     API_KEY_CUSTOM_HEADER = "HTTP_X_API_KEY" # Request header should have "X-API-KEY" key
 
