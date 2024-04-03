@@ -6,20 +6,26 @@ from typing import Dict
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
-
+from django.conf import settings
 
 from currency.models import Currency
 from currency.managers import CurrencyQuerySet
 from currency.serializers import CurrencySerializer
-from distutils.command import check
 from ema.models import EMARecord
 from ema.serializers import EMARecordSerializer
 from .filters import EMARecordQSFilterer
-from .serializers import UserIDSerializer
+from .authentication import universal_logout
+from users.serializers import (
+    UserIDSerializer, PasswordResetRequestSerializer, 
+    PasswordResetSerializer, PasswordResetTokenSerializer
+)
 from users.password_reset import (
-    send_password_reset_mail, check_if_password_reset_token_exists, create_password_reset_token
+    check_if_password_reset_token_exists, check_password_reset_token_validity,
+    create_password_reset_token, construct_password_reset_mail, 
+    delete_password_reset_token, reset_password_for_token
 )
 from helpers.logging import log_exception
+
 
 
 UserModel = get_user_model()
@@ -86,14 +92,12 @@ class UserLogoutAPIView(views.APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        try:
-            user.auth_token.delete()
-        except Exception:
-            # User does not have an auth token and was not authenticated
+        logged_out = universal_logout(request)
+        if not logged_out:
             return response.Response(
                 data={
                     "status": "error",
-                    "message": "Only authenticated users can be logged out!"
+                    "message": "User could not be logged out! Please try again."
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
@@ -115,12 +119,14 @@ class PasswordResetRequestAPIView(views.APIView):
     An email will be sent to the user with a link to reset their password.
     """
     http_method_names = ["post"]
-    serializer_class = UserIDSerializer
+    serializer_class = PasswordResetRequestSerializer
 
     def post(self, request, *args, **kwargs) -> response.Response:
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user_id = serializer.validated_data.get("user_id")
+        token_name = serializer.validated_data.get("token_name")
+        token = None
 
         if request.user.id != user_id:
             return response.Response(
@@ -137,25 +143,32 @@ class PasswordResetRequestAPIView(views.APIView):
             return response.Response(
                 data={
                     "status": "error",
-                    "message": "A password reset request has already been made for this account!"
+                    "message": f"A password reset request was recently made for this account! Please check {request.user.email} for a reset email!"
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        token = None  
         try:
-            # Create a token that is valid for 24 hours
+            # Create a token that is only valid for 24 hours
             token = create_password_reset_token(request.user, validity_period_in_hours=24)
-            send_password_reset_mail(request.user, request, token)
+            message = construct_password_reset_mail(
+                user=request.user, 
+                password_reset_url=settings.PASSWORD_RESET_URL, 
+                token=token,
+                token_name=token_name,
+                token_validity_period=24
+            )
+            request.user.send_mail("Password Reset Request", message, html=True)
+                
         except Exception as exc:
             log_exception(exc)
-            # Delete the token if an error occurs
             if token:
-                token.delete()
+                # Delete the created token if an error occurs
+                delete_password_reset_token(token)
             return response.Response(
                 data={
                     "status": "error",
-                    "message": "An error occurred while processing your request!"
+                    "message": "An error occurred while processing your request. Please try again."
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -170,12 +183,91 @@ class PasswordResetRequestAPIView(views.APIView):
 
 
 
+class CheckPasswordResetTokenValidity(views.APIView):
+    """
+    API View for checking if a user password reset token is still valid
+    """
+    http_method_names = ["post"]
+    serializer_class = PasswordResetTokenSerializer
+
+    def post(self, request, *args, **kwargs) -> response.Response:
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = serializer.validated_data.get("token")
+        is_valid = check_password_reset_token_validity(token)
+
+        if is_valid is False:
+            # If the token is already invalid, delete it.
+            delete_password_reset_token(token)
+        return response.Response(
+            data={
+                "status": "success",
+                "message": "Valid token" if is_valid else "Invalid token",
+                "data": {
+                    "valid": is_valid
+                }
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+
 class PasswordResetAPIView(views.APIView):
     """API view for resetting user account password"""
     http_method_names = ["post"]
+    serializer_class = PasswordResetSerializer
 
     def post(self, request, *args, **kwargs) -> response.Response:
-        pass
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data.copy()
+        new_password = data.pop("new_password")
+        # The last item in the dictionary is the token
+        token = list(data.values())[-1]
+        token_is_valid = check_password_reset_token_validity(token)
+        reset_successful = False
+        
+        if token_is_valid is False:
+            # Delete the token so the user can request a password rest again
+            delete_password_reset_token(token)
+            return response.Response(
+                data={
+                    "status": "error",
+                    "message": "The password reset token is invalid or has expired! Please request a password reset again."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            reset_successful = reset_password_for_token(token, new_password)
+        except Exception as exc:
+            log_exception(exc)
+            return response.Response(
+                data={
+                    "status": "error",
+                    "message": "An error occurred while attempting password reset!"
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+        if not reset_successful:
+            return response.Response(
+                data={
+                    "status": "error",
+                    "message": "Password reset was unsuccessful! Please try again."
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+        # Log the user out of all devices after a successful password reset
+        universal_logout(request)
+        return response.Response(
+            data={
+                "status": "success",
+                "message": "Password reset was successful!"
+            },
+            status=status.HTTP_200_OK
+        )
 
 
 
@@ -250,6 +342,7 @@ class EMARecordListCreateAPIView(generics.ListCreateAPIView):
 user_authentication_api_view = csrf_exempt(UserAuthenticationAPIView.as_view())
 user_logout_api_view = csrf_exempt(UserLogoutAPIView.as_view())
 password_reset_request_api_view = csrf_exempt(PasswordResetRequestAPIView.as_view())
+check_reset_token_validity_api_view = csrf_exempt(CheckPasswordResetTokenValidity.as_view())
 password_reset_api_view = csrf_exempt(PasswordResetAPIView.as_view())
 
 # Model API Views

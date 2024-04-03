@@ -124,7 +124,7 @@ SITE_ID = 1
 SITE_NAME = os.getenv("SITE_NAME")
 
 # The base URL of the web application
-SITE_BASE_URL = os.getenv("BASE_URL")
+PASSWORD_RESET_URL = os.getenv("PASSWORD_RESET_URL")
 
 
 STATIC_URL = 'static/'
@@ -156,7 +156,16 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 50,
+    'DEFAULT_PERMISSION_CLASSES': [
+        "api.permissions.HasAPIKeyOrIsAuthenticated",
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly"
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        "api.authentication.AuthTokenAuthentication",
+    ]
 }
+
+API_KEY_CUSTOM_HEADER = "HTTP_X_API_KEY" # Request header should have "X-API-KEY" key
 
 
 if DEBUG is False:
@@ -165,22 +174,11 @@ if DEBUG is False:
         "rest_framework.renderers.JSONRenderer",
     ]
 
-    REST_FRAMEWORK['DEFAULT_PERMISSION_CLASSES'] = [
-        "api.permissions.HasAPIKeyOrIsAuthenticated",
-        "rest_framework.permissions.IsAuthenticatedOrReadOnly"
-    ]
-
-    REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'] = [
-        "api.authentication.AuthTokenAuthentication",
-    ]
-
     ALLOWED_HOSTS = ["*"] # Set to your domain
 
     CORS_ALLOW_ALL_ORIGINS = False
 
     CORS_ALLOWED_ORIGINS = ["https://*", "http://*", "ws://*", "wss://*"]
-
-    API_KEY_CUSTOM_HEADER = "HTTP_X_API_KEY" # Request header should have "X-API-KEY" key
 
 else:
     REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [

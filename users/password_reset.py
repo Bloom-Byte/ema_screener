@@ -1,7 +1,5 @@
-from django.urls import reverse
 from django.template.loader import render_to_string
 from django.conf import settings
-from django.http.request import HttpRequest
 import datetime
 from django.utils import timezone
 
@@ -14,7 +12,12 @@ def check_if_password_reset_token_exists(user: UserAccount) -> bool:
 
 
 def create_password_reset_token(user: UserAccount, validity_period_in_hours: int = None) -> str:
-    """Create a password reset token for the given user."""
+    """
+    Create a password reset token for the given user.
+
+    :param user: The user who requested the password reset.
+    :param validity_period_in_hours: If set, the token will become invalid after the specified number of hours.
+    """
     if validity_period_in_hours is not None:
         validity_period = datetime.timedelta(hours=validity_period_in_hours)
         expiry_date = timezone.now() + validity_period
@@ -29,29 +32,78 @@ def create_password_reset_token(user: UserAccount, validity_period_in_hours: int
     return token
 
 
+def delete_password_reset_token(token: str) -> None:
+    """Deletes the given password reset token if it exists"""
+    try:
+        reset_token: PasswordResetToken = PasswordResetToken.objects.get_from_key(token)
+    except PasswordResetToken.DoesNotExist:
+        pass
+    else:
+        reset_token.delete()
+    return None
+
+
 def check_password_reset_token_validity(token: str) -> bool:
-    """Check if the password reset token is valid."""
-    reset_token = PasswordResetToken.objects.get_from_key(token)
+    """
+    Check if the password reset token is valid.
+
+    :return: True if the token is valid, False otherwise.
+    """
+    try:
+        reset_token: PasswordResetToken = PasswordResetToken.objects.get_from_key(token)
+    except PasswordResetToken.DoesNotExist:
+        return False
     if reset_token and reset_token.has_expired is False:
         return True
     return False
 
 
-def construct_password_reset_mail(user: UserAccount, request: HttpRequest, token: str) -> str:
-    """Construct the password reset mail body for the given user."""
-    reset_link = request.build_absolute_uri(reverse('api-v1:account__password-reset', kwargs={'token': token}))
+def reset_password_for_token(token: str, new_password: str) -> bool:
+    """
+    Reset the password for the user associated with the given password reset token.
+
+    :param token: The password reset token.
+    :param new_password: The new password.
+    """
+    try:
+        reset_token: PasswordResetToken = PasswordResetToken.objects.get_from_key(token)
+    except PasswordResetToken.DoesNotExist:
+        return False
+    if reset_token and reset_token.has_expired is False:
+        user = reset_token.user
+        user.set_password(new_password)
+        user.save()
+        # Delete the token after the password has been reset
+        reset_token.delete()
+        return True
+    return False
+
+
+def construct_password_reset_mail(
+        user: UserAccount, 
+        password_reset_url: str, 
+        token: str, 
+        token_name: str = "token",
+        token_validity_period: int = None,
+    ) -> str:
+    """
+    Constructs the password reset mail body for the given user.
+
+    :param user: The user who requested the password reset.
+    :param password_reset_url: The URL where the user can reset the password.
+    :param token: The password reset token.
+    :param token_name: The name of the token parameter in the URL. The default value is "token".
+    :return: The password reset mail body.
+    """
+    reset_link = f"{password_reset_url}?{token_name}={token}"
     context = {
         "webapp_name": settings.SITE_NAME,
         "email": user.email,
         "reset_link": reset_link,
+        "validity_period": token_validity_period,
+        "current_year": timezone.now().year,
     }
     return render_to_string("emails/password_reset_mail.html", context)
 
 
-def send_password_reset_mail(user: UserAccount, request: HttpRequest, token: str) -> None:
-    """Send password reset email to the user."""
-    user.send_mail(
-        subject="Password Reset Request",
-        message=construct_password_reset_mail(user, request, token),
-        html=True
-    )
+

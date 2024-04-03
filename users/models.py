@@ -35,6 +35,7 @@ class UserAccount(PermissionsMixin, AbstractBaseUser):
     def __str__(self) -> str:
         return self.email
     
+    
     def send_mail(
         self, 
         subject: str, 
@@ -56,7 +57,7 @@ class UserAccount(PermissionsMixin, AbstractBaseUser):
         email = EmailMessage(
             subject=subject,
             body=message,
-            from_email=from_email,
+            from_email=f"{settings.SITE_NAME} <{from_email}>",
             to=[self.email],
             connection=connection
         )

@@ -11,7 +11,8 @@ urlpatterns = [
     path("accounts/auth/", views.user_authentication_api_view, name="account__auth"),
     path("accounts/logout/", views.user_logout_api_view, name="account__logout"),
     path("accounts/request-password-reset/", views.password_reset_request_api_view, name="account__password-reset-request"),
-    path("accounts/<str:token>/password-reset/", views.password_reset_api_view, name="account__password-reset"),
+    path("accounts/validate-reset-token/", views.check_reset_token_validity_api_view, name="account__validate-reset-token"),
+    path("accounts/reset-password/", views.password_reset_api_view, name="account__reset-password"),
 
     # Currencies
     path("currencies/", views.currency_list_create_api_view, name="currency__list-create"),
