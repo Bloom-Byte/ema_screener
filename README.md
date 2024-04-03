@@ -10,22 +10,7 @@ This is a screener API that uses the Exponential Moving Average (EMA) to determi
 
 - Install the requirements using `pip install -r requirements.txt`
 
-- Setup the environment variables:
-  - To change djsm related configs, see djsm docs [here](https://github.com/ti-oluwa/djsm#)
-  - If necessary, Change the `DB_NAME`, `DB_HOST`, `DB_PORT` variables to point to your database name, host and port respectively.
-
-- Set up your database credentials using djsm:
-  - Run
-
-  ```bash
-  python manage.py update_secrets "DB_USER" "<your_db_user>"
-  ```
-
-  - And
-  
-  ```bash
-  python manage.py update_secrets "DB_PASSWORD" "<your_db_password>"
-  ```
+- Copy the config in temp.env to a new file called .env and update the values
 
 - Run migrations using `python manage.py migrate`
 

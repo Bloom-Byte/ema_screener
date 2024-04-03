@@ -1,20 +1,28 @@
 from django.db import models
-from rest_framework import generics, response, status
-from django.http.response import JsonResponse
+from django.http import JsonResponse
+from rest_framework import generics, response, status, views
 from django.views.decorators.csrf import csrf_exempt
 from typing import Dict
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
+from django.contrib.auth import get_user_model
+
 
 from currency.models import Currency
 from currency.managers import CurrencyQuerySet
 from currency.serializers import CurrencySerializer
+from distutils.command import check
 from ema.models import EMARecord
 from ema.serializers import EMARecordSerializer
 from .filters import EMARecordQSFilterer
-from .authentication import AuthTokenAuthentication
+from .serializers import UserIDSerializer
+from users.password_reset import (
+    send_password_reset_mail, check_if_password_reset_token_exists, create_password_reset_token
+)
+from helpers.logging import log_exception
 
 
+UserModel = get_user_model()
 ema_record_qs = EMARecord.objects.select_related("currency").all()
 currency_qs = Currency.objects.all()
 
@@ -30,6 +38,7 @@ def health_check_api_view(request, *args, **kwargs) -> JsonResponse:
     )
 
 
+
 class UserAuthenticationAPIView(ObtainAuthToken):
     """API view for user authentication"""
 
@@ -38,22 +47,136 @@ class UserAuthenticationAPIView(ObtainAuthToken):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         token, _ = Token.objects.get_or_create(user=user)
-        return response.Response({
-            'token': token.key,
-            'user_id': user.pk,
-        })
+        return response.Response(
+            data={
+                "status": "success",
+                "message": f"{user} was authenticated successfully",
+                "data":{
+                    'token': token.key,
+                    'user_id': user.pk,
+                }
+            },
+            status=status.HTTP_200_OK
+        )
 
 
 
-class UserLogoutAPIView(generics.GenericAPIView):
-    """API view for user logout"""
-    http_method_names = ["get"]
+class UserLogoutAPIView(views.APIView):
+    """
+    API view for logging out a user. 
+
+    This should be used when a user wants to logout of all devices.
+    """
+    http_method_names = ["post"]
+    serializer_class = UserIDSerializer
 
     def post(self, request, *args, **kwargs) -> response.Response:
-        if request.user.is_authenticated:
-            request.user.auth_token.delete()
-        return response.Response(status=status.HTTP_200_OK)
-    
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user_id = serializer.validated_data.get("user_id")
+        
+        try:
+            user = UserModel.objects.get(pk=user_id)
+        except UserModel.DoesNotExist:
+            return response.Response(
+                data={
+                    "status": "error",
+                    "message": "User with the given ID does not exist!"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            user.auth_token.delete()
+        except Exception:
+            # User does not have an auth token and was not authenticated
+            return response.Response(
+                data={
+                    "status": "error",
+                    "message": "Only authenticated users can be logged out!"
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        return response.Response(
+            data={
+                "status": "success",
+                "message": f"{user} was logged out successfully!"
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+
+class PasswordResetRequestAPIView(views.APIView):
+    """
+    API view for requesting a password reset.
+
+    An email will be sent to the user with a link to reset their password.
+    """
+    http_method_names = ["post"]
+    serializer_class = UserIDSerializer
+
+    def post(self, request, *args, **kwargs) -> response.Response:
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user_id = serializer.validated_data.get("user_id")
+
+        if request.user.id != user_id:
+            return response.Response(
+                data={
+                    "status": "error",
+                    "message": "You are not authorized to perform this action!"
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        if check_if_password_reset_token_exists(request.user):
+            # If a token already exists, then the user has already requested a password reset
+            # and should wait for the email to be sent to them or check their email for the link.
+            return response.Response(
+                data={
+                    "status": "error",
+                    "message": "A password reset request has already been made for this account!"
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        token = None  
+        try:
+            # Create a token that is valid for 24 hours
+            token = create_password_reset_token(request.user, validity_period_in_hours=24)
+            send_password_reset_mail(request.user, request, token)
+        except Exception as exc:
+            log_exception(exc)
+            # Delete the token if an error occurs
+            if token:
+                token.delete()
+            return response.Response(
+                data={
+                    "status": "error",
+                    "message": "An error occurred while processing your request!"
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+        return response.Response(
+            data={
+                "status": "success",
+                "message": f"Request processed successfully. An email has been sent to {request.user.email}."
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+
+class PasswordResetAPIView(views.APIView):
+    """API view for resetting user account password"""
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs) -> response.Response:
+        pass
+
 
 
 class CurrencyListCreateAPIView(generics.ListCreateAPIView):
@@ -62,7 +185,6 @@ class CurrencyListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = CurrencySerializer
     queryset = currency_qs
     url_search_param = "search"
-    authentication_classes = [AuthTokenAuthentication]
 
     def get_queryset(self) -> CurrencyQuerySet[Currency]:
         currency_qs = super().get_queryset()
@@ -91,7 +213,6 @@ class CurrencyDestroyAPIView(generics.DestroyAPIView):
     serializer_class = CurrencySerializer
     lookup_field = "id"
     lookup_url_kwarg = "currency_id"
-    authentication_classes = [AuthTokenAuthentication]
 
         
 
@@ -125,8 +246,13 @@ class EMARecordListCreateAPIView(generics.ListCreateAPIView):
 
 
 
+# User Authentication API Views
 user_authentication_api_view = csrf_exempt(UserAuthenticationAPIView.as_view())
 user_logout_api_view = csrf_exempt(UserLogoutAPIView.as_view())
+password_reset_request_api_view = csrf_exempt(PasswordResetRequestAPIView.as_view())
+password_reset_api_view = csrf_exempt(PasswordResetAPIView.as_view())
+
+# Model API Views
 currency_list_create_api_view = csrf_exempt(CurrencyListCreateAPIView.as_view())
 currency_destroy_api_view = csrf_exempt(CurrencyDestroyAPIView.as_view())
 ema_record_list_create_api_view = csrf_exempt(EMARecordListCreateAPIView.as_view())

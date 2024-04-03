@@ -5,9 +5,9 @@ from django.utils.translation import gettext_lazy as _
 
 class TrendChoices(models.IntegerChoices):
     """Choices for trend direction"""
-    UPWARDS = 1, "Upwards"
-    DOWNWORDS = -1, "Downwards"
-    SIDEWAYS = 0, "Sideways"
+    UPWARDS = 1, _("Upwards")
+    DOWNWORDS = -1, _("Downwards")
+    SIDEWAYS = 0, _("Sideways")
 
 
 

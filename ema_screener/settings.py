@@ -1,17 +1,15 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv, find_dotenv
-import djsm
 
 
 
 load_dotenv(find_dotenv(".env", raise_error_if_not_found=True))
 
-secret_manager = djsm.get_djsm(quiet=True)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = secret_manager.get_or_create_secret_key()
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 
@@ -20,7 +18,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_api_key',
     'rest_framework.authtoken',
-    'djsm',
     'corsheaders',
     "channels",
     "daphne",
@@ -85,8 +82,8 @@ DATABASES = {
    'default': {
        'ENGINE': 'django.db.backends.postgresql',
        'NAME': os.getenv("DB_NAME"),
-       'USER': secret_manager.get_secret("DB_USER"),
-       'PASSWORD': secret_manager.get_secret("DB_PASSWORD"),
+       'USER': os.getenv("DB_USER"),
+       'PASSWORD': os.getenv("DB_PASSWORD"),
        'HOST': os.getenv("DB_HOST"),
        'PORT': os.getenv("DB_PORT"),
    }
@@ -119,12 +116,25 @@ USE_I18N = True
 USE_TZ = True
 
 
+# SITE SETTINGS
+
 SITE_ID = 1
+
+# The name of the web application
+SITE_NAME = os.getenv("SITE_NAME")
+
+# The base URL of the web application
+SITE_BASE_URL = os.getenv("BASE_URL")
+
 
 STATIC_URL = 'static/'
 
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+# EMAIL SETTINGS
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
@@ -136,11 +146,11 @@ EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "false").lower() == "true"
 
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "false").lower() == "true"
 
-EMAIL_HOST_USER = secret_manager.get_secret("EMAIL_HOST_USER")
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 
-EMAIL_HOST_PASSWORD = secret_manager.get_secret("EMAIL_HOST_PASSWORD")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
-DEFAULT_FROM_EMAIL = os.getenv("SERVER_EMAIL")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 
 
 REST_FRAMEWORK = {
@@ -151,12 +161,17 @@ REST_FRAMEWORK = {
 
 if DEBUG is False:
     # Production only settings
-    # REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
-    #     "rest_framework.renderers.JSONRenderer",
-    # ]
+    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
+        "rest_framework.renderers.JSONRenderer",
+    ]
 
     REST_FRAMEWORK['DEFAULT_PERMISSION_CLASSES'] = [
         "api.permissions.HasAPIKeyOrIsAuthenticated",
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly"
+    ]
+
+    REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'] = [
+        "api.authentication.AuthTokenAuthentication",
     ]
 
     ALLOWED_HOSTS = ["*"] # Set to your domain
@@ -172,5 +187,7 @@ else:
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
     ]
+
+    ALLOWED_HOSTS = ["*"]
 
     CORS_ALLOW_ALL_ORIGINS = True
