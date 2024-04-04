@@ -1,6 +1,7 @@
 from django.template.loader import render_to_string
 from django.conf import settings
 import datetime
+from typing import Optional
 from django.utils import timezone
 
 from .models import UserAccount, PasswordResetToken
@@ -11,7 +12,7 @@ def check_if_password_reset_token_exists(user: UserAccount) -> bool:
     return PasswordResetToken.objects.filter(user=user).exists()
 
 
-def create_password_reset_token(user: UserAccount, validity_period_in_hours: int = None) -> str:
+def create_password_reset_token(user: UserAccount, validity_period_in_hours: Optional[int] = None) -> str:
     """
     Create a password reset token for the given user.
 
@@ -84,7 +85,7 @@ def construct_password_reset_mail(
         password_reset_url: str, 
         token: str, 
         token_name: str = "token",
-        token_validity_period: int = None,
+        token_validity_period: Optional[int] = None,
     ) -> str:
     """
     Constructs the password reset mail body for the given user.

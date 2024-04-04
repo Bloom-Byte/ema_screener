@@ -1,7 +1,7 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv, find_dotenv
-
+from typing import Union
 
 
 load_dotenv(find_dotenv(".env", raise_error_if_not_found=True))
@@ -166,6 +166,19 @@ REST_FRAMEWORK = {
 }
 
 API_KEY_CUSTOM_HEADER = "HTTP_X_API_KEY" # Request header should have "X-API-KEY" key
+
+def _parse_validity_period(period: Union[str, int]) -> int:
+    """
+    Converts a password reset token validity period in hours to a valid value.
+
+    If the value set is not valid, a default of 24.
+    """
+    try:
+        return int(period)
+    except (ValueError, TypeError):
+        return 24
+
+PASSWORD_RESET_TOKEN_VALIDITY_PERIOD = _parse_validity_period(os.getenv("PASSWORD_RESET_TOKEN_VALIDITY_PERIOD"))
 
 
 if DEBUG is False:

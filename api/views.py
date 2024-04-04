@@ -156,7 +156,7 @@ class PasswordResetRequestAPIView(views.APIView):
                 password_reset_url=settings.PASSWORD_RESET_URL, 
                 token=token,
                 token_name=token_name,
-                token_validity_period=24
+                token_validity_period=settings.PASSWORD_RESET_TOKEN_VALIDITY_PERIOD
             )
             request.user.send_mail("Password Reset Request", message, html=True)
                 
