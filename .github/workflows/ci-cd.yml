@@ -1,0 +1,82 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  clear-and-prune:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Clear app directory, stop containers, and prune system
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_PRIVATE_KEY }}
+        script: |
+          set -e
+          cd ~ || exit
+          docker compose down || true
+          docker system prune --force || true
+          rm -rf app || true
+
+  generate-env-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: SSH into EC2 instance, create app directory, and generate .env file
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_PRIVATE_KEY }}
+        script: |
+          set -e
+          mkdir -p ~/app || true
+          cd ~/app || exit
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+          echo "DB_USER=${{ secrets.POSTGRES_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+          echo "DB_NAME=${{ secrets.POSTGRES_NAME }}" >> .env 
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+          echo "DB_HOST=${{ secrets.POSTGRES_HOST }}" >> .env
+          echo "DEBUG=${{ secrets.DEBUG }}" >> .env
+          echo "EMAIL_HOST_USER=${EMAIL_HOST_USER}" >> .env
+          echo "EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}" >> .env
+          echo "DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL} " >> .env
+          echo "EMAIL_HOST=${{ secrets.EMAIL_HOST }}" >> .env
+          echo "EMAIL_PORT=${{ secrets.EMAIL_PORT }}" >> .env 
+          echo "EMAIL_USE_TLS=${{ secrets.EMAIL_USE_TLS }}" >> .env
+          echo "EMAIL_USE_SSL= ${{ secrets.EMAIL_USE_SSL }}" >> .env
+          echo "SITE_NAME=${{ secrets.SITE_NAME }}" >> .env
+          echo "PASSWORD_RESET_URL=${{ secrets.PASSWORD_RESET_URL }}"
+          echo "PASSWORD_RESET_TOKEN_VALIDITY_PERIOD=${{ secrets.PASSWORD_RESET_TOKEN_VALIDITY_PERIOD }}" >> .env || true
+    - name: Copy files to EC2 instance and deploy
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_PRIVATE_KEY }}
+        source: .
+        target: ~/app
+
+    - name: SSH into EC2 instance, build Docker images, and deploy
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_PRIVATE_KEY }}
+        script: |
+          set -e
+          cd ~/app || exit
+          docker compose build || true
+          docker compose up -d || true
