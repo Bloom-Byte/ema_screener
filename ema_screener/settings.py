@@ -1,6 +1,5 @@
 from pathlib import Path
 import os
-from django.conf.global_settings import CSRF_COOKIE_SECURE
 from dotenv import load_dotenv, find_dotenv
 from typing import Union
 
@@ -193,7 +192,7 @@ if DEBUG is False:
         "rest_framework.renderers.JSONRenderer",
     ]
 
-    ALLOWED_HOSTS = ["*"] # Set to your domain
+    ALLOWED_HOSTS = ["be.emascreener.bloombyte.dev"] # Set to your domain
 
     CSRF_TRUSTED_ORIGINS = ["https://*"]
 
