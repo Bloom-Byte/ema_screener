@@ -44,11 +44,11 @@ jobs:
           mkdir -p ~/app || true
           cd ~/app || exit
           echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
-          echo "DB_USER=${{ secrets.POSTGRES_USER }}" >> .env
-          echo "DB_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
-          echo "DB_NAME=${{ secrets.POSTGRES_NAME }}" >> .env 
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env 
           echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
-          echo "DB_HOST=${{ secrets.POSTGRES_HOST }}" >> .env
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
           echo "DEBUG=${{ secrets.DEBUG }}" >> .env
           echo "EMAIL_HOST_USER=${EMAIL_HOST_USER}" >> .env
           echo "EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}" >> .env
