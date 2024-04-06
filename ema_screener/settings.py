@@ -180,6 +180,7 @@ def _parse_validity_period(period: Union[str, int]) -> int:
 
 PASSWORD_RESET_TOKEN_VALIDITY_PERIOD = _parse_validity_period(os.getenv("PASSWORD_RESET_TOKEN_VALIDITY_PERIOD"))
 
+CORS_ALLOW_ALL_ORIGINS = True
 
 if DEBUG is False:
     # Production only settings
@@ -189,10 +190,6 @@ if DEBUG is False:
 
     ALLOWED_HOSTS = ["*"] # Set to your domain
 
-    CORS_ALLOW_ALL_ORIGINS = False
-
-    CORS_ALLOWED_ORIGINS = ["https://*", "http://*", "ws://*", "wss://*"]
-
 else:
     REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
         "rest_framework.renderers.JSONRenderer",
@@ -201,4 +198,3 @@ else:
 
     ALLOWED_HOSTS = ["*"]
 
-    CORS_ALLOW_ALL_ORIGINS = True
