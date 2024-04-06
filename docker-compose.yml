@@ -11,6 +11,18 @@ services:
         required: true
     command: python manage.py migrate --noinput
 
+  collectstatic:
+    build:
+      context: .
+    volumes:
+      - .:/django
+    env_file:
+      - path: .env
+        required: true
+    command: python manage.py collectstatic --noinput
+    depends_on:
+      - migration
+
   app:
     build: .
     volumes:
@@ -24,4 +36,4 @@ services:
     container_name: my_django_container
     command: python manage.py runserver 0.0.0.0:8000
     depends_on:
-      - migration
+      - collectstatic

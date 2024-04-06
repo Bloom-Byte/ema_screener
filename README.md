@@ -14,6 +14,8 @@ This is a screener API that uses the Exponential Moving Average (EMA) to determi
 
 - Run migrations using `python manage.py migrate`
 
+- Collect staticfiles using `python manage.py collectstatic`
+
 - Create a superuser using `python manage.py createsuperuser`
 
 - Run the server using `python manage.py runserver`

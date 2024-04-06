@@ -14,3 +14,4 @@ application = ProtocolTypeRouter({
     "http": django_asgi_application,
     "websocket": websocket.websocket_application,
 })
+
