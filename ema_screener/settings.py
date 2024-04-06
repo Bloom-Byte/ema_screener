@@ -185,6 +185,7 @@ PASSWORD_RESET_TOKEN_VALIDITY_PERIOD = _parse_validity_period(os.getenv("PASSWOR
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+CSRF_TRUSTED_ORIGINS = ["https://*", "http://*"]
 
 if DEBUG is False:
     # Production only settings
@@ -192,9 +193,7 @@ if DEBUG is False:
         "rest_framework.renderers.JSONRenderer",
     ]
 
-    ALLOWED_HOSTS = ["be.emascreener.bloombyte.dev", "*"] # Set to your domain
-
-    CSRF_TRUSTED_ORIGINS = ["https://*"]
+    ALLOWED_HOSTS = ["be.emascreener.bloombyte.dev"] # Set to your domain
 
     CSRF_COOKIE_SECURE = True
 
