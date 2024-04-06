@@ -73,7 +73,6 @@ class APIKeyAuthMiddleware(BaseMiddleware):
     """
     async def __call__(self, scope, receive, send):
         api_key = get_api_key_from_scope(scope)
-        print("API-KEY: ", api_key)
         if not api_key:
             return await reject_unauthorized(send)
 
