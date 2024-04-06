@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from django.conf.global_settings import CSRF_COOKIE_SECURE
 from dotenv import load_dotenv, find_dotenv
 from typing import Union
 
@@ -185,6 +186,7 @@ PASSWORD_RESET_TOKEN_VALIDITY_PERIOD = _parse_validity_period(os.getenv("PASSWOR
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+
 if DEBUG is False:
     # Production only settings
     REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
@@ -193,7 +195,11 @@ if DEBUG is False:
 
     ALLOWED_HOSTS = ["*"] # Set to your domain
 
-    CSRF_TRUSTED_ORIGINS = ["https://*.bloombyte.dev"]
+    CSRF_TRUSTED_ORIGINS = ["https://*"]
+
+    CSRF_COOKIE_SECURE = True
+
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 else:
     REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
