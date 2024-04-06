@@ -192,7 +192,7 @@ if DEBUG is False:
         "rest_framework.renderers.JSONRenderer",
     ]
 
-    ALLOWED_HOSTS = ["be.emascreener.bloombyte.dev"] # Set to your domain
+    ALLOWED_HOSTS = ["be.emascreener.bloombyte.dev", "*"] # Set to your domain
 
     CSRF_TRUSTED_ORIGINS = ["https://*"]
 
@@ -206,3 +206,4 @@ else:
         "rest_framework.renderers.BrowsableAPIRenderer",
     ]
 
+    ALLOWED_HOSTS = ["*"]
