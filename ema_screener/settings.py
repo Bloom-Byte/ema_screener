@@ -187,6 +187,9 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = ["https://*", "http://*"]
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
 if DEBUG is False:
     # Production only settings
     REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
@@ -196,8 +199,6 @@ if DEBUG is False:
     ALLOWED_HOSTS = ["be.emascreener.bloombyte.dev"] # Set to your domain
 
     CSRF_COOKIE_SECURE = True
-
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 else:
     REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
