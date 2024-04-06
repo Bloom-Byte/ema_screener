@@ -193,7 +193,7 @@ if DEBUG is False:
 
     ALLOWED_HOSTS = ["*"] # Set to your domain
 
-    CSRF_TRUSTED_ORIGINS = ["*"]
+    CSRF_TRUSTED_ORIGINS = ["https://*"]
 
 else:
     REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
