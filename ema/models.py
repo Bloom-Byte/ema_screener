@@ -5,9 +5,9 @@ from django.utils.translation import gettext_lazy as _
 
 class TrendChoices(models.IntegerChoices):
     """Choices for trend direction"""
-    UPWARDS = 1, _("Upwards")
-    DOWNWORDS = -1, _("Downwards")
-    SIDEWAYS = 0, _("Sideways")
+    UPWARDS = "1", _("Upwards")
+    DOWNWORDS = "-1", _("Downwards")
+    SIDEWAYS = "0", _("Sideways")
 
 
 
@@ -21,7 +21,7 @@ class EMARecord(models.Model):
     ema50 = models.FloatField(null=True, blank=True)
     ema100 = models.FloatField(null=True, blank=True)
     ema200 = models.FloatField(null=True, blank=True)
-    trend = models.IntegerField(choices=TrendChoices.choices)
+    trend = models.CharField(choices=TrendChoices.choices)
     monhigh = models.FloatField()
     monlow = models.FloatField()
     monmid = models.FloatField()
