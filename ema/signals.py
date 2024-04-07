@@ -35,7 +35,7 @@ def send_updates_via_websocket(sender: type[EMARecord], instance: EMARecord, **k
             "code": "update",
             "data": change_data
         }
-        notify_group_of_ema_record_update_via_websocket("ema_record_updates", change_data)
+        notify_group_of_ema_record_update_via_websocket("ema_record_updates", data)
     return
 
 
