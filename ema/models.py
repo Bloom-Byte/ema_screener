@@ -21,7 +21,7 @@ class EMARecord(models.Model):
     ema50 = models.FloatField(null=True, blank=True)
     ema100 = models.FloatField(null=True, blank=True)
     ema200 = models.FloatField(null=True, blank=True)
-    trend = models.FloatField(choices=TrendChoices.choices)
+    trend = models.IntegerField(choices=TrendChoices.choices)
     monhigh = models.FloatField()
     monlow = models.FloatField()
     monmid = models.FloatField()
