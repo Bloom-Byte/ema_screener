@@ -3,7 +3,7 @@ import uuid
 from django.utils.translation import gettext_lazy as _
 
 
-class TrendChoices(models.IntegerChoices):
+class TrendChoices(models.TextChoices):
     """Choices for trend direction"""
     UPWARDS = "1", _("Upwards")
     DOWNWORDS = "-1", _("Downwards")

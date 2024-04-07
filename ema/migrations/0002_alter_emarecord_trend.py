@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='emarecord',
             name='trend',
-            field=models.IntegerField(choices=[(1, 'Upwards'), (-1, 'Downwards'), (0, 'Sideways')]),
+            field=models.IntegerField(choices=[("1", 'Upwards'), ("-1", 'Downwards'), ("0", 'Sideways')]),
         ),
     ]

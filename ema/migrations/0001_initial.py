@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ('ema50', models.FloatField(blank=True, null=True)),
                 ('ema100', models.FloatField(blank=True, null=True)),
                 ('ema200', models.FloatField(blank=True, null=True)),
-                ('trend', models.FloatField(choices=[(1, 'Upwards'), (-1, 'Downwards'), (0, 'Sideways')])),
+                ('trend', models.FloatField(choices=[("1", 'Upwards'), ("-1", 'Downwards'), ("0", 'Sideways')])),
                 ('monhigh', models.FloatField()),
                 ('monlow', models.FloatField()),
                 ('monmid', models.FloatField()),
