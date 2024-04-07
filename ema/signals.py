@@ -18,7 +18,7 @@ def send_updates_via_websocket(sender: type[EMARecord], instance: EMARecord, **k
         # It is a new record
         data = EMARecordSerializer(instance).data
         data = {
-            "message": "New EMA record added",
+            "code": "create",
             "data": data
         }
         notify_group_of_ema_record_update_via_websocket("ema_record_updates", data)
@@ -32,7 +32,7 @@ def send_updates_via_websocket(sender: type[EMARecord], instance: EMARecord, **k
         # Add the id of the record to the change_data
         change_data["id"] = str(instance.pk)
         data = {
-            "message": "EMA record updated",
+            "code": "update",
             "data": change_data
         }
         notify_group_of_ema_record_update_via_websocket("ema_record_updates", change_data)
