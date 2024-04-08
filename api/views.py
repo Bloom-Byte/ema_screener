@@ -3,8 +3,6 @@ from django.http import JsonResponse
 from rest_framework import generics, response, status, views
 from django.views.decorators.csrf import csrf_exempt
 from typing import Dict
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
 from django.conf import settings
 
@@ -16,6 +14,7 @@ from ema.serializers import EMARecordSerializer
 from .filters import EMARecordQSFilterer
 from .authentication import universal_logout
 from .permissions import HasAPIKeyOrIsAuthenticated
+from tokens.views import AuthTokenAuthenticationAPIView
 from users.serializers import (
     UserIDSerializer, PasswordResetRequestSerializer, 
     PasswordResetSerializer, PasswordResetTokenSerializer
@@ -46,27 +45,19 @@ def health_check_api_view(request, *args, **kwargs) -> JsonResponse:
 
 
 
-class UserAuthenticationAPIView(ObtainAuthToken):
+class UserAuthenticationAPIView(AuthTokenAuthenticationAPIView):
     """API view for user authentication"""
 
-    def post(self, request, *args, **kwargs) -> response.Response:
-        serializer = self.serializer_class(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        token, _ = Token.objects.get_or_create(user=user)
-        return response.Response(
-            data={
-                "status": "success",
-                "message": f"{user} was authenticated successfully",
-                "data":{
-                    'token': token.key,
-                    'user_id': user.pk,
-                }
-            },
-            status=status.HTTP_200_OK
-        )
-
-
+    def get_response_data(self, user, token) -> Dict:
+        return {
+            "status": "success",
+            "message": f"{user} was authenticated successfully",
+            "data": {
+                'token': token.key,
+                'user_id': user.pk,
+            }
+        }
+    
 
 class UserLogoutAPIView(views.APIView):
     """
@@ -319,6 +310,8 @@ class EMARecordListCreateAPIView(generics.ListCreateAPIView):
     model = EMARecord
     serializer_class = EMARecordSerializer
     queryset = ema_record_qs
+    permission_classes = (HasAPIKeyOrIsAuthenticated,) 
+    # Tentative, this allows anyone with an apikey but not authtoken to create ema records
 
     def get_queryset(self) -> models.QuerySet[EMARecord]:
         ema_qs_filterer = EMARecordQSFilterer(self.request.query_params)

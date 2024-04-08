@@ -5,7 +5,6 @@ import uuid
 from typing import Any
 from django.utils.translation import gettext_lazy as _
 from django.core.mail import EmailMessage, get_connection as get_smtp_connection
-from rest_framework_api_key.models import AbstractAPIKey
 
 from .managers import UserAccountManager
 
@@ -66,14 +65,3 @@ class UserAccount(PermissionsMixin, AbstractBaseUser):
         email.send(fail_silently=False)
         return None
 
-
-
-class PasswordResetToken(AbstractAPIKey):
-    """Make shift password reset token model"""
-    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name="password_reset_tokens")
-
-    class Meta(AbstractAPIKey.Meta):
-        verbose_name = _("Password Reset Token")
-        verbose_name_plural = _("Password Reset Tokens")
-        # Use a unique constraint to ensure that only one token per user is valid at a time
-        unique_together = ["user", "hashed_key"]

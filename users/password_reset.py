@@ -4,7 +4,8 @@ import datetime
 from typing import Optional
 from django.utils import timezone
 
-from .models import UserAccount, PasswordResetToken
+from .models import UserAccount
+from tokens.models import PasswordResetToken
 
 
 def check_if_password_reset_token_exists(user: UserAccount) -> bool:

@@ -17,7 +17,6 @@ INSTALLED_APPS = [
     # dependencies
     'rest_framework',
     'rest_framework_api_key',
-    'rest_framework.authtoken',
     'corsheaders',
     "channels",
     "daphne",
@@ -34,6 +33,7 @@ INSTALLED_APPS = [
     'ema.apps.EmaConfig',
     'currency.apps.CurrencyConfig',
     'users.apps.UsersConfig',
+    'tokens.apps.TokensConfig',
 ]
 
 MIDDLEWARE = [

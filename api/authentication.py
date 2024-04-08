@@ -1,6 +1,8 @@
 from django.http import HttpRequest
 from rest_framework.authentication import TokenAuthentication as BaseTokenAuth
 
+from tokens.models import AuthToken
+
 
 class AuthTokenAuthentication(BaseTokenAuth):
     """
@@ -11,7 +13,9 @@ class AuthTokenAuthentication(BaseTokenAuth):
     Authorization: "AuthToken 5s45d6fugiohjklwrestrdytfuygiuhj"
     ```
     """
+    model = AuthToken
     keyword = "AuthToken"
+
 
 
 def universal_logout(request: HttpRequest) -> bool:
