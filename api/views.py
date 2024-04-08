@@ -15,6 +15,7 @@ from ema.models import EMARecord
 from ema.serializers import EMARecordSerializer
 from .filters import EMARecordQSFilterer
 from .authentication import universal_logout
+from .permissions import HasAPIKeyOrIsAuthenticated
 from users.serializers import (
     UserIDSerializer, PasswordResetRequestSerializer, 
     PasswordResetSerializer, PasswordResetTokenSerializer
@@ -120,46 +121,49 @@ class PasswordResetRequestAPIView(views.APIView):
     """
     http_method_names = ["post"]
     serializer_class = PasswordResetRequestSerializer
+    permission_classes = (HasAPIKeyOrIsAuthenticated,)
 
     def post(self, request, *args, **kwargs) -> response.Response:
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user_id = serializer.validated_data.get("user_id")
+        email = serializer.validated_data.get("email")
         token_name = serializer.validated_data.get("token_name")
         token = None
 
-        if request.user.id != user_id:
+        try:
+            user = UserModel.objects.get(email=email)
+        except UserModel.DoesNotExist:
             return response.Response(
                 data={
                     "status": "error",
-                    "message": "You are not authorized to perform this action!"
+                    "message": f"User account with email address {email}, not found!"
                 },
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_404_NOT_FOUND
             )
         
-        if check_if_password_reset_token_exists(request.user):
+        if check_if_password_reset_token_exists(user) is True:
             # If a token already exists, then the user has already requested a password reset
             # and should wait for the email to be sent to them or check their email for the link.
             return response.Response(
                 data={
                     "status": "error",
-                    "message": f"A password reset request was recently made for this account! Please check {request.user.email} for a reset email!"
+                    "message": f"A password reset request was recently made for this account! Please check {user.email} for a reset email!"
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
         
         try:
             # Create a token that is only valid for 24 hours
-            token = create_password_reset_token(request.user, validity_period_in_hours=24)
+            token = create_password_reset_token(user, validity_period_in_hours=24)
             print("PASSWORD_REST_URL: ", settings.PASSWORD_RESET_URL)
             message = construct_password_reset_mail(
-                user=request.user, 
+                user=user, 
                 password_reset_url=settings.PASSWORD_RESET_URL, 
                 token=token,
                 token_name=token_name,
                 token_validity_period=settings.PASSWORD_RESET_TOKEN_VALIDITY_PERIOD
             )
-            request.user.send_mail("Password Reset Request", message, html=True)
+            user.send_mail("Password Reset Request", message, html=True)
                 
         except Exception as exc:
             log_exception(exc)
@@ -177,7 +181,7 @@ class PasswordResetRequestAPIView(views.APIView):
         return response.Response(
             data={
                 "status": "success",
-                "message": f"Request processed successfully. An email has been sent to {request.user.email}."
+                "message": f"Request processed successfully. An email has been sent to {user.email}."
             },
             status=status.HTTP_200_OK
         )

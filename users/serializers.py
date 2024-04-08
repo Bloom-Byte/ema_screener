@@ -15,7 +15,7 @@ class PasswordResetTokenSerializer(serializers.Serializer):
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     """Serializer for password reset request data"""
-    user_id = serializers.UUIDField(required=True, allow_null=False)
+    email = serializers.EmailField(required=True, allow_null=False)
     token_name = serializers.CharField(required=False, default="token")    
 
 
