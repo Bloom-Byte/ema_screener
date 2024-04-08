@@ -155,7 +155,6 @@ class PasswordResetRequestAPIView(views.APIView):
         try:
             # Create a token that is only valid for 24 hours
             token = create_password_reset_token(user, validity_period_in_hours=24)
-            print("PASSWORD_REST_URL: ", settings.PASSWORD_RESET_URL)
             message = construct_password_reset_mail(
                 user=user, 
                 password_reset_url=settings.PASSWORD_RESET_URL, 
@@ -194,6 +193,7 @@ class CheckPasswordResetTokenValidity(views.APIView):
     """
     http_method_names = ["post"]
     serializer_class = PasswordResetTokenSerializer
+    permission_classes = (HasAPIKeyOrIsAuthenticated,)
 
     def post(self, request, *args, **kwargs) -> response.Response:
         serializer = self.serializer_class(data=request.data)
@@ -221,6 +221,7 @@ class PasswordResetAPIView(views.APIView):
     """API view for resetting user account password"""
     http_method_names = ["post"]
     serializer_class = PasswordResetSerializer
+    permission_classes = (HasAPIKeyOrIsAuthenticated,)
 
     def post(self, request, *args, **kwargs) -> response.Response:
         serializer = self.serializer_class(data=request.data)
