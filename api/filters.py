@@ -26,6 +26,16 @@ class EMARecordQSFilterer:
             # Convert value to appropriate type and 
             # return a dictionary containing the filter
             return models.Q(new_param=value)
+    ```
+
+    If there is an error you should raise a `rest_framework.exceptions.ValidationError` with a dictionary containing the error message.
+
+    For example:
+    ```python
+    raise exceptions.ValidationError({
+        "new_param": ["Invalid value for new_param"]
+    })
+    ```
     """
     def __init__(self, querydict: Union[request.QueryDict, Mapping[str, Any]]) -> None:
         """
@@ -56,7 +66,7 @@ class EMARecordQSFilterer:
                 continue
             except Exception as exc:
                 exceptions.ValidationError({
-                    "error": f"Error while cleaning '{key}' query parameter: {str(exc)}"
+                    "non_field_errors": [f"Error while parsing '{key}' query parameter: {str(exc)}"]
                 })
             else:
                 if not isinstance(query_filter, models.Q):
@@ -94,7 +104,7 @@ class EMARecordQSFilterer:
     
     @staticmethod
     def parse_currency(value: str) -> models.Q:
-        return models.Q(currency__symbol__iexact=value) | models.Q(currency__name__iexact=value)
+        return models.Q(currency__symbol__iexact=value) | models.Q(currency__exchange__iexact=value)
     
     @staticmethod
     def parse_timeframe(value: str) -> models.Q:
@@ -109,7 +119,7 @@ class EMARecordQSFilterer:
         filters = WATCH_VALUE_QUERY_FILTERS.get(value.upper(), None)
         if filters is None:
             raise exceptions.ValidationError({
-                "watch": f"Invalid value '{value}' for watch parameter"
+                "watch": [f"Invalid value '{value}' for watch parameter"]
             })
         return models.Q(**filters)
 
