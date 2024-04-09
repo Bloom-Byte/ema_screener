@@ -10,9 +10,7 @@ class CurrencySerializer(serializers.ModelSerializer):
         model = Currency
         fields = [
             "id",
-            "name",
             "symbol",
-            "current_price",
             "category",
             "subcategory",
             "exchange",

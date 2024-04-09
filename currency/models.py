@@ -17,9 +17,7 @@ class Categories(models.TextChoices):
 class Currency(models.Model):
     """Model for storing currencies"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=100, unique=True)
     symbol = models.CharField(max_length=10, unique=True)
-    current_price = models.FloatField()
     category = models.CharField(max_length=10, choices=Categories.choices)
     subcategory = models.CharField(max_length=100)
     exchange = models.CharField(max_length=255)
@@ -29,11 +27,10 @@ class Currency(models.Model):
     objects = CurrencyManager()
 
     class Meta:
-        ordering = ["name", "symbol", '-added_at']
-        unique_together = ["name", "symbol"]
+        ordering = ["symbol", '-added_at']
         verbose_name = _("Currency")
         verbose_name_plural = _("Currencies")
 
     def __str__(self) -> str:
-        return f"{self.name} ({self.symbol}) - {self.exchange}"
+        return f"{self.symbol} ({self.exchange})"
     
