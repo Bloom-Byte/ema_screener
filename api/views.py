@@ -145,7 +145,7 @@ class PasswordResetRequestAPIView(views.APIView):
         
         try:
             # Create a token that is only valid for 24 hours
-            token = create_password_reset_token(user, validity_period_in_hours=24)
+            token = create_password_reset_token(user, validity_period_in_hours=settings.PASSWORD_RESET_TOKEN_VALIDITY_PERIOD)
             message = construct_password_reset_mail(
                 user=user, 
                 password_reset_url=settings.PASSWORD_RESET_URL, 

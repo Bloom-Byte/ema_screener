@@ -21,7 +21,7 @@ def create_password_reset_token(user: UserAccount, validity_period_in_hours: Opt
     :param validity_period_in_hours: If set, the token will become invalid after the specified number of hours.
     """
     if validity_period_in_hours is not None:
-        validity_period = datetime.timedelta(hours=validity_period_in_hours)
+        validity_period = datetime.timedelta(hours=int(validity_period_in_hours))
         expiry_date = timezone.now() + validity_period
     else:
         expiry_date = None
