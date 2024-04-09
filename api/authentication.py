@@ -1,6 +1,6 @@
-from django.http import HttpRequest
 from rest_framework.authentication import TokenAuthentication as BaseTokenAuth
 
+from users.models import UserAccount
 from tokens.models import AuthToken
 
 
@@ -18,17 +18,15 @@ class AuthTokenAuthentication(BaseTokenAuth):
 
 
 
-def universal_logout(request: HttpRequest) -> bool:
+def universal_logout(user: UserAccount) -> bool:
     """
-    Logs out the user associated with the given request on all devices.
+    Logs out the user from all devices by deleting auth token associated with the user.
 
-    :param request: The request object.
+    :param user: The user to log out.
     :return: True if the user was successfully logged out, False otherwise.
     """
-    if not request.user.is_authenticated:
-        return False
     try:
-        request.user.auth_token.delete()
+        user.auth_token.delete()
     except Exception:
         return False
     return True

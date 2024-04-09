@@ -22,7 +22,7 @@ from users.serializers import (
 from users.password_reset import (
     check_if_password_reset_token_exists, check_password_reset_token_validity,
     create_password_reset_token, construct_password_reset_mail, 
-    delete_password_reset_token, reset_password_for_token
+    delete_password_reset_token, reset_password_for_token, get_token_owner
 )
 from helpers.logging import log_exception
 
@@ -84,12 +84,12 @@ class UserLogoutAPIView(views.APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        logged_out = universal_logout(request)
+        logged_out = universal_logout(request.user)
         if not logged_out:
             return response.Response(
                 data={
                     "status": "error",
-                    "message": "User could not be logged out! Please try again."
+                    "message": "User could not be logged out! You are probably already logged out."
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
@@ -257,7 +257,8 @@ class PasswordResetAPIView(views.APIView):
             )
         
         # Log the user out of all devices after a successful password reset
-        universal_logout(request)
+        user = get_token_owner(token)
+        universal_logout(user)
         return response.Response(
             data={
                 "status": "success",

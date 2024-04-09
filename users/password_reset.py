@@ -108,4 +108,15 @@ def construct_password_reset_mail(
     return render_to_string("emails/password_reset_mail.html", context)
 
 
+def get_token_owner(token: str) -> Optional[UserAccount]:
+    """
+    Get the user who owns the given password reset token.
 
+    :param token: The password reset token.
+    :return: The user who owns the token.
+    """
+    try:
+        reset_token: PasswordResetToken = PasswordResetToken.objects.get_from_key(token)
+    except PasswordResetToken.DoesNotExist:
+        return None
+    return reset_token.user
