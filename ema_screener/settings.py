@@ -169,6 +169,17 @@ REST_FRAMEWORK = {
 
 API_KEY_CUSTOM_HEADER = "HTTP_X_API_KEY" # Request header should have "X-API-KEY" key
 
+CORS_ALLOW_HEADERS = [
+    'Accept',
+    'Accept-Encoding',
+    'Authorization',
+    'Content-Type',
+    'Origin',
+    'Referer',
+    'User-Agent',
+    'x-api-key',  # Add x-api-key to the list of allowed headers
+]
+
 def _parse_validity_period(period: Union[str, int]) -> int:
     """
     Converts a password reset token validity period in hours to a valid value.
