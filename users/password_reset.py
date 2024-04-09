@@ -1,7 +1,7 @@
 from django.template.loader import render_to_string
 from django.conf import settings
 import datetime
-from typing import Optional
+from typing import Optional, Union
 from django.utils import timezone
 
 from .models import UserAccount
@@ -13,7 +13,7 @@ def check_if_password_reset_token_exists(user: UserAccount) -> bool:
     return PasswordResetToken.objects.filter(user=user).exists()
 
 
-def create_password_reset_token(user: UserAccount, validity_period_in_hours: Optional[int] = None) -> str:
+def create_password_reset_token(user: UserAccount, validity_period_in_hours: Optional[Union[int, float]] = None) -> str:
     """
     Create a password reset token for the given user.
 
@@ -21,7 +21,7 @@ def create_password_reset_token(user: UserAccount, validity_period_in_hours: Opt
     :param validity_period_in_hours: If set, the token will become invalid after the specified number of hours.
     """
     if validity_period_in_hours is not None:
-        validity_period = datetime.timedelta(hours=int(validity_period_in_hours))
+        validity_period = datetime.timedelta(hours=float(validity_period_in_hours))
         expiry_date = timezone.now() + validity_period
     else:
         expiry_date = None
