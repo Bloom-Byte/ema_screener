@@ -258,7 +258,8 @@ class PasswordResetAPIView(views.APIView):
         
         # Log the user out of all devices after a successful password reset
         user = get_token_owner(token)
-        universal_logout(user)
+        if user:
+            universal_logout(user)
         return response.Response(
             data={
                 "status": "success",
