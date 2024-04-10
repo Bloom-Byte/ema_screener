@@ -1,6 +1,16 @@
 version: '3.8'
 
 services:
+  makemigrations:
+    build:
+      context: .
+    volumes:
+      - .:/django
+    env_file:
+      - path: .env
+        required: true
+    command: python manage.py makemigrations --noinput
+
   migration:
     build:
       context: .
@@ -10,6 +20,8 @@ services:
       - path: .env
         required: true
     command: python manage.py migrate --noinput
+    depends_on:
+      - makemigrations
 
   collectstatic:
     build:
