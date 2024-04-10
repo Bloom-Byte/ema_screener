@@ -301,9 +301,30 @@ class CurrencyDestroyAPIView(generics.DestroyAPIView):
     """API view for deleting a currency"""
     model = Currency
     queryset = currency_qs
-    serializer_class = CurrencySerializer
     lookup_field = "id"
     lookup_url_kwarg = "currency_id"
+
+    def delete(self, request, *args, **kwargs) -> response.Response:
+        currency = self.get_object()
+        try:
+            currency.delete()
+        except Exception as exc:
+            log_exception(exc)
+            return response.Response(
+                data={
+                    "status": "error",
+                    "message": "An error occurred while attempting to delete the currency!"
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+        return response.Response(
+            data={
+                "status": "success",
+                "message": f"{currency} was deleted successfully!"
+            },
+            status=status.HTTP_200_OK
+        )
 
         
 

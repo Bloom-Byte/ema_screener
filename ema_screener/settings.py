@@ -170,10 +170,7 @@ REST_FRAMEWORK = {
 
 API_KEY_CUSTOM_HEADER = "HTTP_X_API_KEY" # Request header should have "X-API-KEY" key
 
-CORS_ALLOW_HEADERS = [
-    *default_headers,
-    'x-api-key',  # Add x-api-key to the list of allowed headers
-]
+CORS_ALLOW_HEADERS = (*default_headers, 'x-api-key')
 
 def _parse_validity_period(period: Union[str, int]) -> int:
     """
