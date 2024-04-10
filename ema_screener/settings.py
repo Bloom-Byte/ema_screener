@@ -38,7 +38,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
- 'django.middleware.security.SecurityMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -202,8 +202,6 @@ if DEBUG is False:
     ]
 
     ALLOWED_HOSTS = ["be.emascreener.bloombyte.dev"] # Set to your domain
-
-    CSRF_COOKIE_SECURE = True
 
 else:
     REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
