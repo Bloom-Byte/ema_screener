@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv, find_dotenv
 from typing import Union
+from corsheaders.defaults import default_headers
 
 
 load_dotenv(find_dotenv(".env", raise_error_if_not_found=True))
@@ -37,10 +38,10 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
+ 'django.middleware.security.SecurityMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -170,13 +171,7 @@ REST_FRAMEWORK = {
 API_KEY_CUSTOM_HEADER = "HTTP_X_API_KEY" # Request header should have "X-API-KEY" key
 
 CORS_ALLOW_HEADERS = [
-    'Accept',
-    'Accept-Encoding',
-    'Authorization',
-    'Content-Type',
-    'Origin',
-    'Referer',
-    'User-Agent',
+    *default_headers,
     'x-api-key',  # Add x-api-key to the list of allowed headers
 ]
 
