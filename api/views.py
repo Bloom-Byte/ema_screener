@@ -1,5 +1,5 @@
 from django.db import models
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from rest_framework import generics, response, status, views
 from django.views.decorators.csrf import csrf_exempt
 from typing import Dict
@@ -305,9 +305,18 @@ class CurrencyDestroyAPIView(generics.DestroyAPIView):
     lookup_url_kwarg = "currency_id"
 
     def delete(self, request, *args, **kwargs) -> response.Response:
-        currency = self.get_object()
         try:
+            currency = self.get_object()
             currency.delete()
+        except Http404 as exc:
+            # Catch the Http404 exception and return a structured response
+            return response.Response(
+                data={
+                    "status": "error",
+                    "message": str(exc)
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
         except Exception as exc:
             log_exception(exc)
             return response.Response(
