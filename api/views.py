@@ -318,7 +318,12 @@ class EMARecordListCreateAPIView(generics.ListCreateAPIView):
     def get_queryset(self) -> models.QuerySet[EMARecord]:
         ema_qs_filterer = EMARecordQSFilterer(self.request.query_params)
         ema_qs = super().get_queryset()
-        return ema_qs_filterer.apply_filters(ema_qs)
+        try:
+            return ema_qs_filterer.apply_filters(ema_qs)
+        except Exception as exc:
+            # Log the exception and return the unfiltered queryset
+            log_exception(exc)
+        return ema_qs
     
 
     def get(self, request, *args, **kwargs) -> response.Response:
