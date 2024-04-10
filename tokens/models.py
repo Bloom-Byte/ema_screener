@@ -24,10 +24,24 @@ class PasswordResetToken(AbstractAPIKey):
         blank=False,
         default=None,
         help_text=(
-            "A free-form name for the password reset token. "
+            "A free-form name for the token. "
             "Need not be unique. "
             "200 characters max."
         ),
+    )
+    revoked = models.BooleanField(
+        blank=True,
+        default=False,
+        help_text=(
+            "If the token is revoked, clients cannot use it anymore. "
+            "(This cannot be undone.)"
+        ),
+    )
+    expiry_date = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Expires",
+        help_text="Once token expires, clients cannot use it anymore.",
     )
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="password_reset_tokens")
 
