@@ -19,6 +19,16 @@ class AuthToken(BaseToken):
 
 class PasswordResetToken(AbstractAPIKey):
     """Make shift password reset token model"""
+    name = models.CharField(
+        max_length=200,
+        blank=False,
+        default=None,
+        help_text=(
+            "A free-form name for the password reset token. "
+            "Need not be unique. "
+            "200 characters max."
+        ),
+    )
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="password_reset_tokens")
 
     class Meta(AbstractAPIKey.Meta):
