@@ -157,7 +157,6 @@ class PasswordResetRequestAPIView(views.APIView):
             user.send_mail("Password Reset Request", message, html=True)
                 
         except Exception as exc:
-            raise
             log_exception(exc)
             if token:
                 # Delete the created token if an error occurs
