@@ -129,22 +129,46 @@ class EMARecordQSFilterer:
 
 
 WATCH_VALUE_QUERY_FILTERS = {
+    # MUST WATCH
     "A": {
         "twenty_greater_than_fifty": True,
         "fifty_greater_than_hundred": True,
         "hundred_greater_than_twohundred": False,
         "close_greater_than_hundred": False,
     },
+    # BUY
     "B": {
         "twenty_greater_than_fifty": True,
         "fifty_greater_than_hundred": True,
         "hundred_greater_than_twohundred": True,
         "close_greater_than_hundred": False,
     },
+    # STRONG BUY
     "C": {
         "twenty_greater_than_fifty": True,
         "fifty_greater_than_hundred": True,
         "hundred_greater_than_twohundred": True,
         "close_greater_than_hundred": True,
+    },
+    # NEGATIVE WATCH
+    "D": {
+        "twenty_greater_than_fifty": False,
+        "fifty_greater_than_hundred": False,
+        "hundred_greater_than_twohundred": True,
+        "close_greater_than_hundred": True,
+    },
+    # DOWN
+    "E": {
+        "twenty_greater_than_fifty": False,
+        "fifty_greater_than_hundred": False,
+        "hundred_greater_than_twohundred": False,
+        "close_greater_than_hundred": True,
+    },
+    # STRONG DOWN
+    "F": {
+        "twenty_greater_than_fifty": False,
+        "fifty_greater_than_hundred": False,
+        "hundred_greater_than_twohundred": False,
+        "close_greater_than_hundred": False,
     }
 }

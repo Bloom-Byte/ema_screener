@@ -2,8 +2,8 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 
 
-class EMARecordUpdateConsumer(AsyncJsonWebsocketConsumer):
-    """Websocket consumer for EMA record updates"""  
+class EMARecordEventsConsumer(AsyncJsonWebsocketConsumer):
+    """Websocket consumer for EMA record events"""
     channel_layer_alias = 'default'
       
     async def connect(self):
@@ -30,4 +30,4 @@ class EMARecordUpdateConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json(content=event['data'])
 
 
-ema_record_update_consumer = EMARecordUpdateConsumer.as_asgi()
+ema_records_events_consumer = EMARecordEventsConsumer.as_asgi()

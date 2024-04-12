@@ -1,5 +1,5 @@
 from django.dispatch import receiver
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_delete
 
 from .models import EMARecord
 from .serializers import EMARecordSerializer
@@ -11,6 +11,9 @@ from .utils import get_dict_diff, notify_group_of_ema_record_update_via_websocke
 def send_updates_via_websocket(sender: type[EMARecord], instance: EMARecord, **kwargs) -> None:
     """
     Updates the frontend via websocket on changes to EMA records
+
+    A "create" code is sent when a new record is created alongside the new record data.
+    An "update" code is sent when an existing record is updated alongside the changes made to the record.
     """
     try:
         previous_record = EMARecord.objects.get(pk=instance.pk)
@@ -40,5 +43,18 @@ def send_updates_via_websocket(sender: type[EMARecord], instance: EMARecord, **k
 
 
 
+@receiver(post_delete, sender=EMARecord)
+def send_deletes_via_websocket(sender: type[EMARecord], instance: EMARecord, **kwargs) -> None:
+    """
+    Notifies the frontend via websocket when an EMA record is deleted
 
-    
+    A "delete" code is sent when a record is deleted alongside the id of the deleted record.
+    """
+    data = {
+        "code": "delete",
+        "data": {
+            "id": str(instance.pk)
+        }
+    }
+    notify_group_of_ema_record_update_via_websocket("ema_record_updates", data)
+    return

@@ -36,11 +36,11 @@ sudo service redis-server start
 
 ## Connecting to the EMA Record Update Websocket
 
-The EMA record update record websocket route is `ws://be.emascreener.bloombyte.dev:8000/ws/ema-records/update/`
+The EMA record update record websocket route is `ws://be.emascreener.bloombyte.dev:8000/ws/ema-records/`
 `
 In production, ensure that you include a valid API key with your connection request. You can do this by
 
-- Adding a url query param `ws://be.emascreener.bloombyte.dev:8000/ws/ema-records/update/?api_key=<your_api_key>`, or
+- Adding a url query param `ws://be.emascreener.bloombyte.dev:8000/ws/ema-records/?api_key=<your_api_key>`, or
 - Adding the API key to your request headers using the `X-API-KEY` key.
 
 To test your connection, send a JSON message through the connection. If the connection is okay it should piggy-back your message.
