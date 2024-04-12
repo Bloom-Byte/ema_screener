@@ -59,6 +59,9 @@ class EMARecordQSFilterer:
         """
         aggregate = models.Q()
         for key, value in querydict.items():
+            if not value:
+                # Skip empty values
+                continue
             try:
                 query_filter = getattr(self, f"parse_{key}")(value)
             except AttributeError:

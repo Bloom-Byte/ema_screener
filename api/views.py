@@ -155,7 +155,6 @@ class PasswordResetRequestAPIView(views.APIView):
                 token_validity_period=validity_period
             )
             user.send_mail("Password Reset Request", message, html=True)
-                
         except Exception as exc:
             log_exception(exc)
             if token:
@@ -347,9 +346,9 @@ class EMARecordListCreateAPIView(generics.ListCreateAPIView):
     # Tentative, this allows anyone with an apikey but not authtoken to create ema records
 
     def get_queryset(self) -> models.QuerySet[EMARecord]:
-        ema_qs_filterer = EMARecordQSFilterer(self.request.query_params)
         ema_qs = super().get_queryset()
         try:
+            ema_qs_filterer = EMARecordQSFilterer(self.request.query_params)
             return ema_qs_filterer.apply_filters(ema_qs)
         except Exception as exc:
             # Log the exception and return the unfiltered queryset
