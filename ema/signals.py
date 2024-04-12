@@ -12,8 +12,9 @@ def send_updates_via_websocket(sender: type[EMARecord], instance: EMARecord, **k
     """
     Updates the frontend via websocket on changes to EMA records
 
-    A "create" code is sent when a new record is created alongside the new record data.
-    An "update" code is sent when an existing record is updated alongside the changes made to the record.
+    - A "create" code is sent when a new record is created alongside the new record data.
+
+    - An "update" code is sent when an existing record is updated alongside the changes made to the record.
     """
     try:
         previous_record = EMARecord.objects.get(pk=instance.pk)
@@ -48,7 +49,7 @@ def send_deletes_via_websocket(sender: type[EMARecord], instance: EMARecord, **k
     """
     Notifies the frontend via websocket when an EMA record is deleted
 
-    A "delete" code is sent when a record is deleted alongside the id of the deleted record.
+    - A "delete" code is sent when a record is deleted alongside the id of the deleted record.
     """
     data = {
         "code": "delete",
