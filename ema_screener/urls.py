@@ -10,3 +10,8 @@ urlpatterns = [
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+
+admin.site.site_header = f"{settings.SITE_NAME or "EMA Screener"} Admin"
+admin.site.site_title = f"{settings.SITE_NAME or "EMA Screener"} Admin"
+admin.site.index_title = f"{settings.SITE_NAME or "EMA Screener"} Admin"
