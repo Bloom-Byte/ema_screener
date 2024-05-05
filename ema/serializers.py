@@ -76,5 +76,10 @@ class EMARecordSerializer(serializers.ModelSerializer):
             })
         else:
             validated_data["currency"] = currency
+
+        existing_instance = self.Meta.model.objects.filter(currency=currency).first()
+        if existing_instance:
+            # Update the existing instance, instead of creating a new one
+            return self.update(existing_instance, validated_data)
         return super().create(validated_data)
 

@@ -342,8 +342,8 @@ class EMARecordListCreateAPIView(generics.ListCreateAPIView):
     model = EMARecord
     serializer_class = EMARecordSerializer
     queryset = ema_record_qs
-    permission_classes = (HasAPIKeyOrIsAuthenticated,) 
-    # Tentative, this allows anyone with an apikey but not authtoken to create ema records
+    permission_classes = (HasAPIKeyOrIsAuthenticated,)
+    # This allows anyone with an apikey and not necessarily an authtoken to create ema records
 
     def get_queryset(self) -> models.QuerySet[EMARecord]:
         ema_qs = super().get_queryset()
@@ -368,7 +368,7 @@ class EMARecordListCreateAPIView(generics.ListCreateAPIView):
         - ema100: EMA100 value
         - ema200: EMA200 value
         - trend: Trend direction (1 for upwards, -1 for downwards, 0 for sideways)
-        - watch: EMA watchlist type. Can be either be type "A", "B", or "C"
+        - watch: EMA watchlist type. Can be either be type "A", "B", "C", "D", "E" or "F"
         """
         return super().get(request, *args, **kwargs)
 
