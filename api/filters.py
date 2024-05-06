@@ -7,6 +7,7 @@ from django.db.models.manager import BaseManager
 
 M = TypeVar("M", bound=models.Model)
 
+
 class EMARecordQSFilterer:
     """
     Filters EMARecord queryset based on URL query parameters
