@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from typing import Dict
 from django.contrib.auth import get_user_model
 from django.conf import settings
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 from currency.models import Currency
 from currency.managers import CurrencyQuerySet
@@ -12,8 +13,8 @@ from currency.serializers import CurrencySerializer
 from ema.models import EMARecord
 from ema.serializers import EMARecordSerializer
 from .filters import EMARecordQSFilterer
-from .authentication import universal_logout
-from .permissions import HasAPIKeyOrIsAuthenticated
+from .authentication import universal_logout, AuthTokenAuthentication
+from .permissions import HasAPIKey
 from tokens.views import AuthTokenAuthenticationAPIView
 from users.serializers import (
     UserIDSerializer, PasswordResetRequestSerializer, 
@@ -112,7 +113,6 @@ class PasswordResetRequestAPIView(views.APIView):
     """
     http_method_names = ["post"]
     serializer_class = PasswordResetRequestSerializer
-    permission_classes = (HasAPIKeyOrIsAuthenticated,)
 
     def post(self, request, *args, **kwargs) -> response.Response:
         serializer = self.serializer_class(data=request.data)
@@ -184,7 +184,6 @@ class CheckPasswordResetTokenValidity(views.APIView):
     """
     http_method_names = ["post"]
     serializer_class = PasswordResetTokenSerializer
-    permission_classes = (HasAPIKeyOrIsAuthenticated,)
 
     def post(self, request, *args, **kwargs) -> response.Response:
         serializer = self.serializer_class(data=request.data)
@@ -212,7 +211,6 @@ class PasswordResetAPIView(views.APIView):
     """API view for resetting user account password"""
     http_method_names = ["post"]
     serializer_class = PasswordResetSerializer
-    permission_classes = (HasAPIKeyOrIsAuthenticated,)
 
     def post(self, request, *args, **kwargs) -> response.Response:
         serializer = self.serializer_class(data=request.data)
@@ -276,6 +274,8 @@ class CurrencyListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = CurrencySerializer
     queryset = currency_qs
     url_search_param = "search"
+    permission_classes = (IsAuthenticatedOrReadOnly, HasAPIKey)
+    authentication_classes = (AuthTokenAuthentication,)
 
     def get_queryset(self) -> CurrencyQuerySet[Currency]:
         currency_qs = super().get_queryset()
@@ -303,6 +303,8 @@ class CurrencyDestroyAPIView(generics.DestroyAPIView):
     queryset = currency_qs
     lookup_field = "id"
     lookup_url_kwarg = "currency_id"
+    permission_classes = (IsAuthenticated, HasAPIKey)
+    authentication_classes = (AuthTokenAuthentication,)
 
     def delete(self, request, *args, **kwargs) -> response.Response:
         try:
@@ -338,12 +340,11 @@ class CurrencyDestroyAPIView(generics.DestroyAPIView):
         
 
 class EMARecordListCreateAPIView(generics.ListCreateAPIView):
-    """API view for listing and creating EMA records"""
+    """API view for retrieving, creating and updating EMA records"""
     model = EMARecord
     serializer_class = EMARecordSerializer
     queryset = ema_record_qs
-    permission_classes = (HasAPIKeyOrIsAuthenticated,)
-    # This allows anyone with an apikey and not necessarily an authtoken to create ema records
+    http_method_names = ["get", "post", "put"]
 
     def get_queryset(self) -> models.QuerySet[EMARecord]:
         ema_qs = super().get_queryset()
@@ -371,6 +372,15 @@ class EMARecordListCreateAPIView(generics.ListCreateAPIView):
         - watch: EMA watchlist type. Can be either be type "A", "B", "C", "D", "E" or "F"
         """
         return super().get(request, *args, **kwargs)
+    
+
+    def put(self, request, *args, **kwargs) -> response.Response:
+        """
+        Update an EMA record
+        """
+        # User can update existing EMA records via a POST request already
+        # Just add this so users can update records using a PUT request
+        return super().post(request, *args, **kwargs)
 
 
 

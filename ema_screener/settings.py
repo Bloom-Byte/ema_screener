@@ -160,12 +160,9 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 50,
     'DEFAULT_PERMISSION_CLASSES': [
-        "api.permissions.HasAPIKeyOrIsAuthenticated",
-        "rest_framework.permissions.IsAuthenticatedOrReadOnly"
+        "api.permissions.HasAPIKey",
     ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        "api.authentication.AuthTokenAuthentication",
-    ]
+    'DEFAULT_AUTHENTICATION_CLASSES': []
 }
 
 API_KEY_CUSTOM_HEADER = "HTTP_X_API_KEY" # Request header should have "X-API-KEY" key
