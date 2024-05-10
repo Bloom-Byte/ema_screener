@@ -275,6 +275,7 @@ class CurrencyListCreateAPIView(generics.ListCreateAPIView):
     queryset = currency_qs
     url_search_param = "search"
     permission_classes = (IsAuthenticatedOrReadOnly, HasAPIKey)
+    authentication_classes = (AuthTokenAuthentication,)
 
     def get_queryset(self) -> CurrencyQuerySet[Currency]:
         currency_qs = super().get_queryset()
