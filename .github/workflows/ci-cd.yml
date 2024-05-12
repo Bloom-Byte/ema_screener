@@ -21,7 +21,7 @@ jobs:
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
           set -e
-          cd ~ || exit
+          cd ~/ema-screener || exit
           docker compose down || true
           docker system prune --force || true
           rm -rf app || true
@@ -41,8 +41,8 @@ jobs:
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
           set -e
-          mkdir -p ~/app || true
-          cd ~/app || exit
+          mkdir -p ~/ema-screener/app || true
+          cd ~/ema-screener/app || exit
           echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
           echo "DB_USER=${{ secrets.DB_USER }}" >> .env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
@@ -68,7 +68,7 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         source: .
-        target: ~/app
+        target: ~/ema-screener/app
 
     - name: SSH into EC2 instance, build Docker images, and deploy
       uses: appleboy/ssh-action@master
@@ -78,6 +78,6 @@ jobs:
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
           set -e
-          cd ~/app || exit
+          cd ~/ema-screener/app || exit
           docker compose build || true
           docker compose up -d || true
