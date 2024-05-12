@@ -44,8 +44,8 @@ services:
         required: true
     ports:
       - 8000:8000
-    image: app:django
-    container_name: my_django_container
+    image: ema-screener:django
+    container_name: ema-screener
     command: python manage.py runserver 0.0.0.0:8000
     depends_on:
       - collectstatic
