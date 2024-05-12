@@ -17,29 +17,33 @@ def send_updates_via_websocket(sender: type[EMARecord], instance: EMARecord, **k
     - An "update" code is sent when an existing record is updated alongside the changes made to the record.
     """
     try:
-        previous_record = EMARecord.objects.get(pk=instance.pk)
-    except EMARecord.DoesNotExist:
-        # It is a new record
-        data = EMARecordSerializer(instance).data
-        data = {
-            "code": "create",
-            "data": data
-        }
-        notify_group_of_ema_record_update_via_websocket("ema_record_updates", data)
-        return
-    
-    previous_record_dict = EMARecordSerializer(previous_record).data
-    record_dict = EMARecordSerializer(instance).data
-    # Get the changes made to the record
-    change_data = get_dict_diff(previous_record_dict, record_dict)
-    if change_data:
-        # Add the id of the record to the change_data
-        change_data["id"] = str(instance.pk)
-        data = {
-            "code": "update",
-            "data": change_data
-        }
-        notify_group_of_ema_record_update_via_websocket("ema_record_updates", data)
+        try:
+            previous_record = EMARecord.objects.get(pk=instance.pk)
+        except EMARecord.DoesNotExist:
+            # It is a new record
+            data = EMARecordSerializer(instance).data
+            data = {
+                "code": "create",
+                "data": data
+            }
+            notify_group_of_ema_record_update_via_websocket("ema_record_updates", data)
+            return
+        
+        previous_record_dict = EMARecordSerializer(previous_record).data
+        record_dict = EMARecordSerializer(instance).data
+        # Get the changes made to the record
+        change_data = get_dict_diff(previous_record_dict, record_dict)
+        if change_data:
+            # Add the id of the record to the change_data
+            change_data["id"] = str(instance.pk)
+            data = {
+                "code": "update",
+                "data": change_data
+            }
+            notify_group_of_ema_record_update_via_websocket("ema_record_updates", data)
+    except Exception:
+        # Ignore any errors that occur while sending the notification
+        pass
     return
 
 
@@ -51,11 +55,15 @@ def send_deletes_via_websocket(sender: type[EMARecord], instance: EMARecord, **k
 
     - A "delete" code is sent when a record is deleted alongside the id of the deleted record.
     """
-    data = {
-        "code": "delete",
-        "data": {
-            "id": str(instance.pk)
+    try:
+        data = {
+            "code": "delete",
+            "data": {
+                "id": str(instance.pk)
+            }
         }
-    }
-    notify_group_of_ema_record_update_via_websocket("ema_record_updates", data)
+        notify_group_of_ema_record_update_via_websocket("ema_record_updates", data)
+    except Exception:
+        # Ignore any errors that occur while sending the notification
+        pass
     return

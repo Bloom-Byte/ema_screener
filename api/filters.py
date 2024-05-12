@@ -1,8 +1,99 @@
-from typing import Any, Mapping, TypeVar, Union
+import functools
+from typing import Any, List, Mapping, TypeVar, Union, Generator
 from rest_framework import request, exceptions
+import itertools
 
 from django.db import models
 from django.db.models.manager import BaseManager
+
+
+WATCH_VALUE_QUERY_FILTERS = {
+    # MUST WATCH
+    "A": {
+        "twenty_greater_than_fifty": True,
+        "fifty_greater_than_hundred": True,
+        "hundred_greater_than_twohundred": False,
+        "close_greater_than_hundred": False,
+    },
+    # BUY
+    "B": {
+        "twenty_greater_than_fifty": True,
+        "fifty_greater_than_hundred": True,
+        "hundred_greater_than_twohundred": True,
+        "close_greater_than_hundred": False,
+    },
+    # STRONG BUY
+    "C": {
+        "twenty_greater_than_fifty": True,
+        "fifty_greater_than_hundred": True,
+        "hundred_greater_than_twohundred": True,
+        "close_greater_than_hundred": True,
+    },
+    # NEGATIVE WATCH
+    "D": {
+        "twenty_greater_than_fifty": False,
+        "fifty_greater_than_hundred": False,
+        "hundred_greater_than_twohundred": True,
+        "close_greater_than_hundred": True,
+    },
+    # DOWN
+    "E": {
+        "twenty_greater_than_fifty": False,
+        "fifty_greater_than_hundred": False,
+        "hundred_greater_than_twohundred": False,
+        "close_greater_than_hundred": True,
+    },
+    # STRONG DOWN
+    "F": {
+        "twenty_greater_than_fifty": False,
+        "fifty_greater_than_hundred": False,
+        "hundred_greater_than_twohundred": False,
+        "close_greater_than_hundred": False,
+    }
+}
+
+
+
+# cache the results of possible_selections so that 
+# we don't have to repeat the same calculations
+# which might be expensive
+@functools.lru_cache(maxsize=10)
+def possible_selections(*args, r) -> List[tuple]:
+    """
+    Utility function to get all possible selections of r items from the input list
+    including duplicates.
+
+    :param args: List of items to choose from
+    :param r: Number of items to choose
+    """
+    return list(itertools.combinations_with_replacement(args, r))
+
+
+def possible_watch_filters() -> Generator[Mapping[str, Any], None, None]:
+    """Generate all possible watch filters"""
+    # Assuming the combination set is (True, True, False, False) repeated twice
+    combination_set = (True, True, False, False)*2
+    # How many possible combinations of 4 can be made from the combination set
+    # that is, how many ways can we choose 4 items from the combination set.
+    # The result is 70, but remove duplicates
+    eight_combinate_four_without_duplicates = set(possible_selections(*combination_set, r=4))
+    for values in eight_combinate_four_without_duplicates:
+        filters = {
+            "twenty_greater_than_fifty": values[0],
+            "fifty_greater_than_hundred": values[1],
+            "hundred_greater_than_twohundred": values[2],
+            "close_greater_than_hundred": values[3],
+        }
+        yield filters
+
+
+def sideways_watch_filters():
+    """Generate all possible sideways watch filters"""
+    none_sideways_watch_filters = WATCH_VALUE_QUERY_FILTERS.values()
+    for filter in possible_watch_filters():
+        if filter not in none_sideways_watch_filters:
+            yield filter
+
 
 
 M = TypeVar("M", bound=models.Model)
@@ -120,56 +211,17 @@ class EMARecordQSFilterer:
     
     @staticmethod
     def parse_watch(value: str) -> models.Q:
-        filters = WATCH_VALUE_QUERY_FILTERS.get(value.upper(), None)
-        if filters is None:
-            raise exceptions.ValidationError({
-                "watch": [f"Invalid value '{value}' for watch parameter"]
-            })
-        return models.Q(**filters)
+        q = models.Q()
+        # If value is 'sideways', add all possible sideways watch filters
+        if value.lower().strip() == "sideways":
+            for filter in sideways_watch_filters():
+                q.add(models.Q(**filter), models.Q.OR)
+        else:
+            filters = WATCH_VALUE_QUERY_FILTERS.get(value.upper().strip(), None)
+            if filters is None:
+                raise exceptions.ValidationError({
+                    "watch": [f"Invalid value '{value}' for watch parameter"]
+                })
+            q = models.Q(**filters)
+        return q
 
-
-
-WATCH_VALUE_QUERY_FILTERS = {
-    # MUST WATCH
-    "A": {
-        "twenty_greater_than_fifty": True,
-        "fifty_greater_than_hundred": True,
-        "hundred_greater_than_twohundred": False,
-        "close_greater_than_hundred": False,
-    },
-    # BUY
-    "B": {
-        "twenty_greater_than_fifty": True,
-        "fifty_greater_than_hundred": True,
-        "hundred_greater_than_twohundred": True,
-        "close_greater_than_hundred": False,
-    },
-    # STRONG BUY
-    "C": {
-        "twenty_greater_than_fifty": True,
-        "fifty_greater_than_hundred": True,
-        "hundred_greater_than_twohundred": True,
-        "close_greater_than_hundred": True,
-    },
-    # NEGATIVE WATCH
-    "D": {
-        "twenty_greater_than_fifty": False,
-        "fifty_greater_than_hundred": False,
-        "hundred_greater_than_twohundred": True,
-        "close_greater_than_hundred": True,
-    },
-    # DOWN
-    "E": {
-        "twenty_greater_than_fifty": False,
-        "fifty_greater_than_hundred": False,
-        "hundred_greater_than_twohundred": False,
-        "close_greater_than_hundred": True,
-    },
-    # STRONG DOWN
-    "F": {
-        "twenty_greater_than_fifty": False,
-        "fifty_greater_than_hundred": False,
-        "hundred_greater_than_twohundred": False,
-        "close_greater_than_hundred": False,
-    }
-}

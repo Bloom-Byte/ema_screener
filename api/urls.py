@@ -16,6 +16,7 @@ urlpatterns = [
 
     # Currencies
     path("currencies/", views.currency_list_create_api_view, name="currency__list-create"),
+    path("currencies/categories/", views.currency_category_list_api_view, name="currency-category__list"),
     path("currencies/<uuid:currency_id>/delete/", views.currency_destroy_api_view, name="currency__delete"),
 
     # EMA Records

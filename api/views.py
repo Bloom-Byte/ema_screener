@@ -294,6 +294,33 @@ class CurrencyListCreateAPIView(generics.ListCreateAPIView):
         - search: Search query to filter currencies by name, symbol, category, or subcategory
         """
         return super().get(request, *args, **kwargs)
+    
+
+
+
+class CurrencyCategoryListAPIView(views.APIView):
+    """API view for listing currency categories and subcategories"""
+    queryset = currency_qs
+    http_method_names = ["get"]
+    
+    def get(self, request, *args, **kwargs) -> response.Response:
+        """
+        Retrieve a list of currency categories
+        """
+        currencies = self.queryset
+        categories = currencies.values_list("category", flat=True).distinct()
+        subcategories = currencies.values_list("subcategory", flat=True).distinct()
+        return response.Response(
+            data={
+                "status": "success",
+                "message": "Currency categories retrieved successfully!",
+                "data": {
+                    "categories": set(categories),
+                    "subcategories": set(subcategories)
+                }
+            },
+            status=status.HTTP_200_OK
+        )
 
 
 
@@ -393,5 +420,6 @@ password_reset_api_view = csrf_exempt(PasswordResetAPIView.as_view())
 
 # Model API Views
 currency_list_create_api_view = csrf_exempt(CurrencyListCreateAPIView.as_view())
+currency_category_list_api_view = csrf_exempt(CurrencyCategoryListAPIView.as_view())
 currency_destroy_api_view = csrf_exempt(CurrencyDestroyAPIView.as_view())
 ema_record_list_create_api_view = csrf_exempt(EMARecordListCreateAPIView.as_view())
