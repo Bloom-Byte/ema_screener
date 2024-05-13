@@ -51,7 +51,7 @@ services:
       - path: .env
         required: true
     ports:
-      - 8000:8000
+      - 8002:8000
     image: ema-screener:django
     container_name: ema-screener
     command: python manage.py runserver 0.0.0.0:8000
