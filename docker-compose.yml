@@ -1,5 +1,7 @@
 version: '3.8'
-
+networks:
+  ema_net:
+    driver: bridge
 services:
   makemigrations:
     build:
@@ -35,7 +37,7 @@ services:
     depends_on:
       - migration
 
-  app:
+  ema_app:
     build: .
     volumes:
       - .:/django
