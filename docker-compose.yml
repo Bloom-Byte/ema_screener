@@ -1,7 +1,9 @@
-version: '3.8'
+version: '3.12.1'
+
 networks:
   ema_net:
     driver: bridge
+
 services:
   makemigrations:
     build:
