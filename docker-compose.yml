@@ -12,6 +12,8 @@ services:
       - path: .env
         required: true
     command: python manage.py makemigrations --noinput
+    networks:
+      - ema_net
 
   migration:
     build:
@@ -24,6 +26,8 @@ services:
     command: python manage.py migrate --noinput
     depends_on:
       - makemigrations
+    networks:
+      - ema_net
 
   collectstatic:
     build:
@@ -36,6 +40,8 @@ services:
     command: python manage.py collectstatic --noinput
     depends_on:
       - migration
+    networks:
+      - ema_net
 
   ema_app:
     build: .
@@ -51,3 +57,5 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     depends_on:
       - collectstatic
+    networks:
+      - ema_net
