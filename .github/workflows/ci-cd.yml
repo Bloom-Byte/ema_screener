@@ -23,7 +23,6 @@ jobs:
           set -e
           cd ~/ema-screener || exit
           docker compose down || true
-          docker system prune --force || true
           rm -rf app || true
 
   generate-env-and-deploy:
