@@ -224,4 +224,12 @@ class EMARecordQSFilterer:
                 })
             q = models.Q(**filters)
         return q
+    
+    @staticmethod
+    def parse_category(value: str) -> models.Q:
+        return models.Q(currency__category__iexact=value)
+    
+    @staticmethod
+    def parse_subcategory(value: str) -> models.Q:
+        return models.Q(currency__subcategory__iexact=value)
 
