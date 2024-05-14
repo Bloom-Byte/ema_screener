@@ -21,10 +21,9 @@ jobs:
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
           set -e
-          cd ~/ema-screener || exit
+          cd ~/ema-screener/app || exit
           docker compose down || true
-          docker system prune --force || true
-          rm -rf app || true
+          rm -rf ../app || true
 
   generate-env-and-deploy:
     runs-on: ubuntu-latest

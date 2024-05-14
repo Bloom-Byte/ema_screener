@@ -1,4 +1,8 @@
-version: '3.8'
+version: '3.12.1'
+
+networks:
+  ema_net:
+    driver: bridge
 
 services:
   makemigrations:
@@ -10,6 +14,8 @@ services:
       - path: .env
         required: true
     command: python manage.py makemigrations --noinput
+    networks:
+      - ema_net
 
   migration:
     build:
@@ -22,6 +28,8 @@ services:
     command: python manage.py migrate --noinput
     depends_on:
       - makemigrations
+    networks:
+      - ema_net
 
   collectstatic:
     build:
@@ -34,8 +42,10 @@ services:
     command: python manage.py collectstatic --noinput
     depends_on:
       - migration
+    networks:
+      - ema_net
 
-  app:
+  ema_app:
     build: .
     volumes:
       - .:/django
@@ -43,9 +53,11 @@ services:
       - path: .env
         required: true
     ports:
-      - 8000:8000
+      - 8002:8000
     image: ema-screener:django
     container_name: ema-screener
     command: python manage.py runserver 0.0.0.0:8000
     depends_on:
       - collectstatic
+    networks:
+      - ema_net
