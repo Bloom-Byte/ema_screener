@@ -1,4 +1,4 @@
-# EMA Screener
+# Trend Catcher
 
 This is a screener API that uses the Exponential Moving Average (EMA) to determine if a stock is a buy or sell.
 
