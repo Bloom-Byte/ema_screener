@@ -15,7 +15,7 @@ class EMARecord(models.Model):
     """Model for storing EMA records"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     timeframe = models.DurationField()
-    currency = models.OneToOneField("currency.Currency", on_delete=models.CASCADE, related_name="ema_records")
+    currency = models.ForeignKey("currency.Currency", on_delete=models.CASCADE, related_name="ema_records")
     close = models.FloatField()
     ema20 = models.FloatField(null=True, blank=True)
     ema50 = models.FloatField(null=True, blank=True)

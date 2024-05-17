@@ -1,6 +1,7 @@
 from rest_framework import serializers, exceptions
 from typing import Any, Dict
 
+
 from .models import EMARecord
 from currency.serializers import StrippedCurrencySerializer
 from currency.models import Currency
@@ -53,7 +54,7 @@ class EMARecordSerializer(serializers.ModelSerializer):
         return convert_watch_values_internal_names_to_external_names(representation)
     
 
-    def run_validation(self, data=...):
+    def run_validation(self, data: Dict):
         # Incase the watch values are provided in external names,
         # convert the external watch value names to internal watchlist names
         # before validating the data
@@ -63,6 +64,8 @@ class EMARecordSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data: Dict) -> Any:
         currency_symbol: str = validated_data.pop("currency_symbol", None)
+        timeframe = validated_data.get("timeframe")
+
         if not currency_symbol:
             raise exceptions.ValidationError({
                 "currency_symbol": ["This field is required."]
@@ -77,7 +80,7 @@ class EMARecordSerializer(serializers.ModelSerializer):
         else:
             validated_data["currency"] = currency
 
-        existing_instance = self.Meta.model.objects.filter(currency=currency).first()
+        existing_instance = self.Meta.model.objects.filter(currency=currency, timeframe=timeframe).first()
         if existing_instance:
             # Update the existing instance, instead of creating a new one
             return self.update(existing_instance, validated_data)

@@ -407,7 +407,11 @@ class EMARecordListCreateAPIView(generics.ListCreateAPIView):
         """
         # User can update existing EMA records via a POST request already
         # Just add this so users can update records using a PUT request
-        return super().post(request, *args, **kwargs)
+        response = super().post(request, *args, **kwargs)
+        # Change the status code to 200 if the record was updated successfully
+        if response.status_code == status.HTTP_201_CREATED:
+            response.status_code = status.HTTP_200_OK
+        return response
 
 
 
