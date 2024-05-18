@@ -1,25 +1,25 @@
 from typing import Dict, Union
 from rest_framework_api_key.models import APIKey
 from channels.middleware import BaseMiddleware
-from asgiref.sync import sync_to_async
+from channels.db import database_sync_to_async
 from urllib.parse import parse_qs
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 
 
 
-async def api_key_exists(api_key: str) -> bool:
+@database_sync_to_async
+def api_key_is_valid(api_key: str) -> bool:
     """
-    Check if an API key exists in the database
+    Check if an API key is valid.
 
     :param api_key: The API key to check
     :return: True if the API key exists, False otherwise
     """
     try:
-        await sync_to_async(APIKey.objects.get_from_key)(api_key)
+        return APIKey.objects.is_valid(api_key)
     except APIKey.DoesNotExist:
         return False
-    return True
 
 
 def get_api_key_from_scope(scope: Dict) -> str | None:
@@ -76,7 +76,7 @@ class APIKeyAuthMiddleware(BaseMiddleware):
         if not api_key:
             return await reject_unauthorized(send)
 
-        if await api_key_exists(api_key) is False:
+        if await api_key_is_valid(api_key) is False:
             return await reject_unauthorized(send)
         return await super().__call__(scope, receive, send)
 

@@ -10,5 +10,5 @@ websocket_application = ProtocolTypeRouter({
 })
 
 
-websocket_application = APIKeyAuthMiddlewareStack(websocket_application)
+# websocket_application = APIKeyAuthMiddlewareStack(websocket_application)
 

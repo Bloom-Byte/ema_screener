@@ -30,4 +30,5 @@ class EMARecordEventsConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json(content=event['data'])
 
 
+
 ema_records_events_consumer = EMARecordEventsConsumer.as_asgi()
