@@ -3,8 +3,21 @@ version: '3.12.1'
 networks:
   ema_net:
     driver: bridge
+    
+volumes:
+  ema_redis_data:
+    driver: local
 
 services:
+  emaredis:
+    image: redis:7.0.6
+    container_name: ema-redis
+    volumes:
+      - ema_redis_data:/data
+    ports:
+      - "6379"
+    networks:
+      - ema_net
   makemigrations:
     build:
       context: .
@@ -59,5 +72,6 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     depends_on:
       - collectstatic
+      - emaredis
     networks:
       - ema_net
