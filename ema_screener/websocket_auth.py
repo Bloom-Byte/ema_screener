@@ -76,13 +76,14 @@ class APIKeyAuthMiddleware(BaseMiddleware):
         if not api_key:
             return await reject_unauthorized(send)
 
-        if await api_key_is_valid(api_key) is False:
+        authorized = await api_key_is_valid(api_key)
+        if not authorized:
             return await reject_unauthorized(send)
         return await super().__call__(scope, receive, send)
 
 
 
-def APIKeyAuthMiddlewareStack(inner: Union[URLRouter, ProtocolTypeRouter, BaseMiddleware]) -> APIKeyAuthMiddleware:
+def APIKeyAuthMiddlewareStack(inner: Union[URLRouter, ProtocolTypeRouter, BaseMiddleware]):
     """
     Applies both `channels.auth.AuthMiddlewareStack` and `APIKeyAuthMiddleware`
     """

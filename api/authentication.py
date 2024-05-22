@@ -2,6 +2,8 @@ from rest_framework.authentication import TokenAuthentication as BaseTokenAuth
 
 from users.models import UserAccount
 from tokens.models import AuthToken
+from helpers.logging import log_exception
+
 
 
 class AuthTokenAuthentication(BaseTokenAuth):
@@ -27,6 +29,7 @@ def universal_logout(user: UserAccount) -> bool:
     """
     try:
         user.auth_token.delete()
-    except Exception:
+    except Exception as exc:
+        log_exception(exc)
         return False
     return True

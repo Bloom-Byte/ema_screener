@@ -2,12 +2,6 @@ from rest_framework import serializers
 
 
 
-class UserIDSerializer(serializers.Serializer):
-    """Serializer for user id"""
-    user_id = serializers.UUIDField(required=True, allow_null=False)
-
-
-
 class PasswordResetTokenSerializer(serializers.Serializer):
     token = serializers.CharField(required=True, allow_null=False)
 
